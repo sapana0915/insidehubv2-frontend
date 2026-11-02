@@ -5,6 +5,7 @@ import {
   Cpu,
   Landmark,
   Mountain,
+  Palette,
   Sparkles,
   UtensilsCrossed,
   type LucideIcon,
@@ -74,6 +75,14 @@ export const CATEGORIES: CategoryMeta[] = [
     icon: Cpu,
     color: "var(--color-ink-soft)",
     code: "TEC",
+  },
+  {
+    slug: "art",
+    name: "Art",
+    description: "Paintings, sketches, crafts and creative work from the road.",
+    icon: Palette,
+    color: "var(--color-rose)",
+    code: "ART",
   },
   {
     slug: "other",

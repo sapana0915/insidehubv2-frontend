@@ -99,7 +99,7 @@ export default function Landing() {
         <SectionHeading eyebrow="Choose a drawer" title={<>Every story gets its own stamp.</>}>
           Browse by what you are in the mood for — a slow read about a mountain village, or a quick bowl of street food.
         </SectionHeading>
-        <div className="mt-12 grid grid-cols-2 gap-6 md:grid-cols-4">
+        <div className="mt-12 grid grid-cols-2 gap-6 md:grid-cols-3">
           {CATEGORIES.map((c, i) => {
             const Icon = c.icon;
             return (
