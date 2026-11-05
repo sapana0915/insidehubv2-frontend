@@ -65,6 +65,22 @@ export interface PostInput {
   images: PostImageInput[];
 }
 
+export interface CommentAuthor {
+  id: string;
+  username: string;
+  full_name: string | null;
+}
+
+export interface Comment {
+  id: string;
+  post_id: string;
+  author_id: string;
+  author: CommentAuthor | null;
+  content: string;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface PostFilters {
   category?: string;
   author_id?: string;

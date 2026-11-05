@@ -14,6 +14,7 @@ import { PostGrid } from "../components/posts/PostGrid";
 import { EmptyState, RouteLine, Spinner } from "../components/ui/Decor";
 import { Button, ButtonLink } from "../components/ui/Button";
 import { FormError } from "../components/ui/Field";
+import { Comments } from "../components/comments/Comments";
 
 export default function PostDetail() {
   const { id } = useParams();
@@ -144,6 +145,8 @@ export default function PostDetail() {
           <Gallery images={rest} />
         </section>
       ) : null}
+
+      <Comments postId={post.id} />
 
       <section className="mx-auto mt-20 max-w-7xl px-4 sm:px-6">
         <RouteLine className="mb-10" />
