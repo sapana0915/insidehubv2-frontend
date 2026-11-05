@@ -8,12 +8,18 @@ const MAX_IMAGES = 12;
 const MAX_BYTES = 5 * 1024 * 1024;
 const ACCEPTED = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 
-interface ImagePickerProps {
-  value: string[];
-  onChange: (urls: string[]) => void;
+export interface DraftImage {
+  url: string;
+  placeName: string;
 }
 
-export function ImagePicker({ value, onChange }: ImagePickerProps) {
+interface ImagePickerProps {
+  value: DraftImage[];
+  onChange: (images: DraftImage[]) => void;
+  placeNames?: boolean;
+}
+
+export function ImagePicker({ value, onChange, placeNames = false }: ImagePickerProps) {
   const fileInput = useRef<HTMLInputElement>(null);
   const upload = useUploadImage();
   const [urlDraft, setUrlDraft] = useState("");
@@ -26,7 +32,7 @@ export function ImagePicker({ value, onChange }: ImagePickerProps) {
     if (!files) return;
     setError(null);
     const list = Array.from(files).slice(0, remaining);
-    const added: string[] = [];
+    const added: DraftImage[] = [];
     setUploading(list.length);
     for (const file of list) {
       if (!ACCEPTED.includes(file.type)) {
@@ -38,7 +44,7 @@ export function ImagePicker({ value, onChange }: ImagePickerProps) {
         continue;
       }
       try {
-        added.push(await upload.mutateAsync(file));
+        added.push({ url: await upload.mutateAsync(file), placeName: "" });
       } catch (err) {
         setError(errorMessage(err, `Couldn't upload ${file.name}.`));
       }
@@ -58,7 +64,7 @@ export function ImagePicker({ value, onChange }: ImagePickerProps) {
       return;
     }
     setError(null);
-    onChange([...value, url]);
+    onChange([...value, { url, placeName: "" }]);
     setUrlDraft("");
   }
 
@@ -72,14 +78,28 @@ export function ImagePicker({ value, onChange }: ImagePickerProps) {
     onChange([picked, ...next]);
   }
 
+  function updatePlace(index: number, placeName: string) {
+    onChange(value.map((image, i) => (i === index ? { ...image, placeName } : image)));
+  }
+
   return (
     <div>
       <span className="eyebrow">Photographs · {value.length}/{MAX_IMAGES}</span>
 
       <div className="mt-3 grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
-        {value.map((url, i) => (
-          <figure key={`${url}-${i}`} className="postcard group relative !p-2 !pb-2" style={{ transform: `rotate(${i % 2 ? 1 : -1}deg)` }}>
-            <img src={url} alt="" className="aspect-square w-full object-cover" />
+        {value.map((image, i) => (
+          <figure key={`${image.url}-${i}`} className="postcard group relative !p-2 !pb-3" style={{ transform: `rotate(${i % 2 ? 1 : -1}deg)` }}>
+            <img src={image.url} alt="" className="aspect-square w-full object-cover" />
+            {placeNames ? (
+              <input
+                value={image.placeName}
+                onChange={(e) => updatePlace(i, e.target.value)}
+                maxLength={200}
+                placeholder="Place name (optional)"
+                aria-label={`Place name for photo ${i + 1}`}
+                className="mt-2 w-full border-0 bg-transparent text-center font-hand text-lg text-ink placeholder:text-ink-faint focus:outline-none"
+              />
+            ) : null}
             {i === 0 ? (
               <figcaption className="absolute left-3 top-3 bg-terracotta px-2 py-0.5 font-mono text-[0.55rem] tracking-widest text-paper">
                 COVER

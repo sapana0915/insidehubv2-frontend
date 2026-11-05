@@ -36,8 +36,10 @@ export function Gallery({ images }: { images: PostImage[] }) {
             className="postcard !p-2 !pb-6 text-left"
             style={{ transform: `rotate(${[-2, 1.5, -1, 2, -1.5][i % 5]}deg)` }}
           >
-            <img src={img.image_url} alt={`Photo ${i + 1}`} loading="lazy" className="aspect-square w-full object-cover" />
-            <span className="mt-2 block text-center font-hand text-lg text-ink-soft">frame {String(i + 1).padStart(2, "0")}</span>
+            <img src={img.image_url} alt={img.place_name?.trim() || `Photo ${i + 1}`} loading="lazy" className="aspect-square w-full object-cover" />
+            <span className="mt-2 block text-center font-hand text-lg text-ink-soft">
+              {img.place_name?.trim() || `frame ${String(i + 1).padStart(2, "0")}`}
+            </span>
           </button>
         ))}
       </div>
@@ -61,8 +63,13 @@ export function Gallery({ images }: { images: PostImage[] }) {
               onClick={(e) => e.stopPropagation()}
             >
               <img src={images[open].image_url} alt="" className="max-h-[78vh] max-w-[88vw] object-contain" />
-              <figcaption className="mt-3 text-center font-mono text-xs tracking-widest text-ink-soft">
-                {open + 1} / {images.length}
+              <figcaption className="mt-3 text-center text-ink-soft">
+                {images[open].place_name?.trim() ? (
+                  <span className="mb-1 block font-hand text-2xl text-ink">{images[open].place_name}</span>
+                ) : null}
+                <span className="font-mono text-xs tracking-widest">
+                  {open + 1} / {images.length}
+                </span>
               </figcaption>
             </motion.figure>
             <button className="absolute right-5 top-5 text-paper" onClick={close} aria-label="Close">

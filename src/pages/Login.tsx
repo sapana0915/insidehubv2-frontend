@@ -3,7 +3,7 @@ import { Link, Navigate, useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { errorMessage } from "../api/client";
 import { BoardingPass } from "../components/layout/BoardingPass";
-import { Input, FormError } from "../components/ui/Field";
+import { Input, PasswordInput, FormError } from "../components/ui/Field";
 import { Button } from "../components/ui/Button";
 
 export function safeNext(next: string | null) {
@@ -54,10 +54,9 @@ export default function Login() {
       <form onSubmit={onSubmit} className="space-y-6">
         <FormError message={error} />
         <Input label="Email" name="email" type="email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
-        <Input
+        <PasswordInput
           label="Password"
           name="password"
-          type="password"
           autoComplete="current-password"
           required
           value={password}

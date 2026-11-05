@@ -12,6 +12,7 @@ interface AuthState {
   isLoading: boolean;
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<void>;
+  sendSignupCode: (email: string, username: string) => Promise<number>;
   register: (input: RegisterInput) => Promise<void>;
   logout: () => void;
 }
@@ -71,13 +72,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setToken(access_token);
   }, []);
 
-  const register = useCallback(
-    async (input: RegisterInput) => {
-      await authApi.register(input);
-      await login(input.email, input.password);
-    },
-    [login],
-  );
+  const sendSignupCode = useCallback(async (email: string, username: string) => {
+    const result = await authApi.sendSignupCode(email, username);
+    return result.resend_in;
+  }, []);
+
+  const register = useCallback(async (input: RegisterInput) => {
+    const { access_token } = await authApi.register(input);
+    tokenStore.set(access_token);
+    setToken(access_token);
+  }, []);
 
   const value = useMemo<AuthState>(
     () => ({
@@ -86,10 +90,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isLoading: Boolean(token) && meQuery.isPending,
       isAuthenticated: Boolean(token),
       login,
+      sendSignupCode,
       register,
       logout,
     }),
-    [token, meQuery.data, meQuery.isPending, login, register, logout],
+    [token, meQuery.data, meQuery.isPending, login, sendSignupCode, register, logout],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

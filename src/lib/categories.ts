@@ -31,7 +31,7 @@ export const CATEGORIES: CategoryMeta[] = [
   {
     slug: "photography",
     name: "Photography",
-    description: "Frames worth a thousand words.",
+    description: "Photographs only. A place name on each photo is optional.",
     icon: Camera,
     color: "var(--color-ocean)",
     code: "PHO",
@@ -93,6 +93,8 @@ export const CATEGORIES: CategoryMeta[] = [
     code: "OTH",
   },
 ];
+
+export const PHOTOGRAPHY_SLUG = "photography";
 
 const BY_SLUG = new Map(CATEGORIES.map((c) => [c.slug, c]));
 

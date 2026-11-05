@@ -26,6 +26,7 @@ export interface PostAuthor {
 export interface PostImage {
   id: string;
   image_url: string;
+  place_name: string | null;
   user_id: string;
 }
 
@@ -52,11 +53,16 @@ export interface Token {
   token_type: string;
 }
 
+export interface PostImageInput {
+  url: string;
+  place_name?: string | null;
+}
+
 export interface PostInput {
   title: string;
   content: string;
   category: string;
-  images: string[];
+  images: PostImageInput[];
 }
 
 export interface PostFilters {
@@ -70,6 +76,13 @@ export interface RegisterInput {
   username: string;
   full_name?: string;
   password: string;
+  code: string;
+}
+
+export interface SendCodeResult {
+  message: string;
+  expires_in: number;
+  resend_in: number;
 }
 
 export interface UserUpdateInput {

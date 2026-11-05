@@ -5,7 +5,7 @@ import axios from "axios";
 import { useDeletePost, usePost } from "../hooks/posts";
 import { useAuth } from "../context/AuthContext";
 import { errorMessage } from "../api/client";
-import { categoryMeta } from "../lib/categories";
+import { PHOTOGRAPHY_SLUG, categoryMeta } from "../lib/categories";
 import { displayName, formatDate, paragraphs, readingTime } from "../lib/format";
 import { StampBadge } from "../components/ui/StampBadge";
 import { Postmark } from "../components/ui/Postmark";
@@ -40,8 +40,10 @@ export default function PostDetail() {
 
   const isOwner = Boolean(user && (user.id === post.author_id || user.is_admin));
   const meta = categoryMeta(post.category);
+  const isPhoto = post.category === PHOTOGRAPHY_SLUG;
   const [cover, ...rest] = post.images;
   const body = paragraphs(post.content);
+  const place = cover?.place_name?.trim() ?? "";
 
   async function onDelete() {
     await deletePost.mutateAsync(post!.id);
@@ -59,10 +61,17 @@ export default function PostDetail() {
           <div className="flex flex-wrap items-center gap-4">
             <StampBadge slug={post.category} link size="md" />
             <span className="eyebrow">
-              {formatDate(post.created_at, { day: "numeric", month: "long", year: "numeric" })} · {readingTime(post.content)} min read
+              {formatDate(post.created_at, { day: "numeric", month: "long", year: "numeric" })}
+              {isPhoto
+                ? ` · ${post.images.length} photo${post.images.length === 1 ? "" : "s"}`
+                : ` · ${readingTime(post.content)} min read`}
             </span>
           </div>
-          <h1 className="mt-6 font-display text-5xl font-semibold leading-[1.02] tracking-tight md:text-7xl">{post.title}</h1>
+          {isPhoto ? (
+            <h1 className="sr-only">{place || "Photograph"}</h1>
+          ) : (
+            <h1 className="mt-6 font-display text-5xl font-semibold leading-[1.02] tracking-tight md:text-7xl">{post.title}</h1>
+          )}
           <div className="mt-6 flex flex-wrap items-center justify-between gap-6">
             <Link to={`/u/${post.author_id}`} className="group flex items-center gap-3">
               <span className="flex h-11 w-11 items-center justify-center rounded-full border-2 border-ink bg-mustard font-display text-lg font-semibold">
@@ -108,21 +117,26 @@ export default function PostDetail() {
       {cover ? (
         <figure className="mx-auto mt-12 max-w-5xl px-4 sm:px-6">
           <div className="postcard !p-3 md:!p-4" style={{ transform: "rotate(-0.6deg)" }}>
-            <img src={cover.image_url} alt="" className="max-h-[70vh] w-full object-cover" />
+            <img src={cover.image_url} alt={place} className="max-h-[70vh] w-full object-cover" />
           </div>
+          {isPhoto && place ? (
+            <figcaption className="mt-4 text-center font-hand text-3xl text-ocean">{place}</figcaption>
+          ) : null}
         </figure>
       ) : null}
 
-      <div className="mx-auto mt-14 max-w-2xl px-4 sm:px-6">
-        <div className="space-y-6 font-display text-[1.22rem] leading-[1.75] text-ink/90">
-          {body.map((p, i) => (
-            <p key={i} className={`whitespace-pre-line ${i === 0 ? "drop-cap" : ""}`}>
-              {p}
-            </p>
-          ))}
+      {isPhoto ? null : (
+        <div className="mx-auto mt-14 max-w-2xl px-4 sm:px-6">
+          <div className="space-y-6 font-display text-[1.22rem] leading-[1.75] text-ink/90">
+            {body.map((p, i) => (
+              <p key={i} className={`whitespace-pre-line ${i === 0 ? "drop-cap" : ""}`}>
+                {p}
+              </p>
+            ))}
+          </div>
+          <p className="mt-12 text-right font-hand text-3xl text-ocean">— {displayName(post.author)}</p>
         </div>
-        <p className="mt-12 text-right font-hand text-3xl text-ocean">— {displayName(post.author)}</p>
-      </div>
+      )}
 
       {rest.length > 0 ? (
         <section className="mx-auto mt-16 max-w-5xl px-4 sm:px-6">

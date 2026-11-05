@@ -4,9 +4,9 @@ import { Send } from "lucide-react";
 import { useCreatePost, usePost, useUpdatePost } from "../hooks/posts";
 import { useAuth } from "../context/AuthContext";
 import { errorMessage } from "../api/client";
-import { CATEGORIES } from "../lib/categories";
+import { CATEGORIES, PHOTOGRAPHY_SLUG } from "../lib/categories";
 import { readingTime } from "../lib/format";
-import { ImagePicker } from "../components/posts/ImagePicker";
+import { ImagePicker, type DraftImage } from "../components/posts/ImagePicker";
 import { Textarea, FormError } from "../components/ui/Field";
 import { Button } from "../components/ui/Button";
 import { Spinner } from "../components/ui/Decor";
@@ -23,7 +23,7 @@ export default function PostEditor() {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [category, setCategory] = useState("travel-stories");
-  const [images, setImages] = useState<string[]>([]);
+  const [images, setImages] = useState<DraftImage[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [hydrated, setHydrated] = useState(!isEdit);
 
@@ -32,7 +32,7 @@ export default function PostEditor() {
       setTitle(existing.data.title);
       setContent(existing.data.content);
       setCategory(existing.data.category);
-      setImages(existing.data.images.map((i) => i.image_url));
+      setImages(existing.data.images.map((i) => ({ url: i.image_url, placeName: i.place_name ?? "" })));
       setHydrated(true);
     }
   }, [isEdit, existing.data, hydrated]);
@@ -50,15 +50,36 @@ export default function PostEditor() {
   }
 
   const saving = createPost.isPending || updatePost.isPending;
+  const isPhoto = category === PHOTOGRAPHY_SLUG;
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
     setError(null);
-    if (!title.trim() || !content.trim()) {
+    if (isPhoto) {
+      if (images.length === 0) {
+        setError("Add at least one photo.");
+        return;
+      }
+    } else if (!title.trim() || !content.trim()) {
       setError("Every entry needs a title and a story.");
       return;
     }
-    const payload = { title: title.trim(), content: content.trim(), category, images };
+    const payload = isPhoto
+      ? {
+          title: "",
+          content: "",
+          category,
+          images: images.map((image) => ({
+            url: image.url,
+            place_name: image.placeName.trim() || null,
+          })),
+        }
+      : {
+          title: title.trim(),
+          content: content.trim(),
+          category,
+          images: images.map((image) => ({ url: image.url })),
+        };
     try {
       const post = isEdit ? await updatePost.mutateAsync(payload) : await createPost.mutateAsync(payload);
       navigate(`/p/${post.id}`, { replace: true });
@@ -71,9 +92,13 @@ export default function PostEditor() {
     <form onSubmit={onSubmit} className="mx-auto max-w-4xl px-4 pb-10 pt-10 sm:px-6">
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-ink/10 pb-5">
         <div>
-          <p className="eyebrow">{isEdit ? "Revising an entry" : "New journal entry"}</p>
+          <p className="eyebrow">{isEdit ? "Revising an entry" : isPhoto ? "New photograph" : "New journal entry"}</p>
           <p className="mt-1 font-hand text-2xl text-ocean">
-            {content.trim() ? `${readingTime(content)} min read · ${images.length} photo${images.length === 1 ? "" : "s"}` : "dear diary…"}
+            {isPhoto
+              ? `${images.length} photo${images.length === 1 ? "" : "s"}`
+              : content.trim()
+                ? `${readingTime(content)} min read · ${images.length} photo${images.length === 1 ? "" : "s"}`
+                : "dear diary…"}
           </p>
         </div>
         <div className="flex gap-3">
@@ -115,8 +140,14 @@ export default function PostEditor() {
               );
             })}
           </div>
+          {isPhoto ? (
+            <p className="mt-4 max-w-xl text-sm text-ink-soft">
+              Photography is photos only. Add a place name under a picture if you want. It is optional.
+            </p>
+          ) : null}
         </fieldset>
 
+        {isPhoto ? null : (
         <label className="block">
           <span className="sr-only">Title</span>
           <input
@@ -128,9 +159,11 @@ export default function PostEditor() {
           />
           <span className="mt-1 block text-right font-mono text-[0.6rem] text-ink-faint">{title.length}/200</span>
         </label>
+        )}
 
-        <ImagePicker value={images} onChange={setImages} />
+        <ImagePicker value={images} onChange={setImages} placeNames={isPhoto} />
 
+        {isPhoto ? null : (
         <Textarea
           label="The story"
           name="content"
@@ -140,6 +173,7 @@ export default function PostEditor() {
           placeholder="Where were you? What did it smell like? Leave a blank line between paragraphs."
           hint="Plain text. A blank line starts a new paragraph."
         />
+        )}
 
         <div className="flex justify-end gap-3 border-t border-ink/10 pt-6">
           <Button type="button" variant="ghost" onClick={() => navigate(-1)}>

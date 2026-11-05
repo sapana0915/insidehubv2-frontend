@@ -48,7 +48,7 @@ export default function Profile() {
             postCount={profile.data?.post_count}
           >
             <span className="eyebrow">Email</span>
-            <p className="font-mono text-sm">{user.email}</p>
+            <p className="break-all font-mono text-sm">{user.email}</p>
           </PassportCard>
 
           {editing ? (

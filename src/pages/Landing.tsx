@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { ArrowRight, PenLine } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { usePostsFeed } from "../hooks/posts";
-import { CATEGORIES } from "../lib/categories";
+import { CATEGORIES, PHOTOGRAPHY_SLUG } from "../lib/categories";
 import { ButtonLink } from "../components/ui/Button";
 import { RouteLine, SectionHeading } from "../components/ui/Decor";
 import { PostGrid } from "../components/posts/PostGrid";
@@ -43,7 +43,13 @@ function HeroCollage() {
                   }}
                 />
               )}
-              <span className="mt-2 block text-center font-hand text-xl text-ink-soft">{post ? post.title : frame.label}</span>
+              <span className="mt-2 block text-center font-hand text-xl text-ink-soft">
+                {post
+                  ? post.category === PHOTOGRAPHY_SLUG
+                    ? post.images[0]?.place_name?.trim() || "Photograph"
+                    : post.title
+                  : frame.label}
+              </span>
             </Link>
           </motion.div>
         );

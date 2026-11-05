@@ -2,16 +2,19 @@ import { Link } from "react-router-dom";
 import { Images } from "lucide-react";
 import type { Post } from "../../types";
 import { displayName, excerpt, formatDate, readingTime, tiltFor } from "../../lib/format";
-import { categoryMeta } from "../../lib/categories";
+import { PHOTOGRAPHY_SLUG, categoryMeta } from "../../lib/categories";
 import { StampBadge } from "../ui/StampBadge";
 
 export function PostcardCard({ post, index = 0 }: { post: Post; index?: number }) {
   const cover = post.images[0]?.image_url;
   const meta = categoryMeta(post.category);
+  const isPhoto = post.category === PHOTOGRAPHY_SLUG;
+  const place = post.images[0]?.place_name?.trim() ?? "";
+  const label = isPhoto ? place || "Photograph" : post.title;
 
   return (
     <article className="postcard group relative mb-8 break-inside-avoid" style={{ transform: `rotate(${tiltFor(index)}deg)` }}>
-      <Link to={`/p/${post.id}`} className="block focus-visible:outline-none" aria-label={post.title}>
+      <Link to={`/p/${post.id}`} className="block focus-visible:outline-none" aria-label={label}>
         {cover ? (
           <div className="relative overflow-hidden bg-paper-deep">
             <img
@@ -29,7 +32,7 @@ export function PostcardCard({ post, index = 0 }: { post: Post; index?: number }
         ) : (
           <div className="lined-paper relative flex aspect-[4/3] items-center justify-center overflow-hidden border border-ink/10">
             <span className="font-display text-[7rem] font-semibold italic leading-none" style={{ color: meta.color, opacity: 0.85 }}>
-              {post.title.trim().charAt(0).toUpperCase()}
+              {(isPhoto ? "P" : post.title.trim().charAt(0)).toUpperCase()}
             </span>
             <span className="absolute right-3 top-3 font-mono text-[0.6rem] tracking-[0.3em] text-ink-faint">{meta.code}</span>
           </div>
@@ -38,12 +41,18 @@ export function PostcardCard({ post, index = 0 }: { post: Post; index?: number }
         <div className="px-1 pt-4">
           <div className="flex items-center justify-between gap-2 font-mono text-[0.62rem] uppercase tracking-[0.18em] text-ink-faint">
             <span>{formatDate(post.created_at)}</span>
-            <span>{readingTime(post.content)} min read</span>
+            <span>{isPhoto ? `${post.images.length} photo${post.images.length === 1 ? "" : "s"}` : `${readingTime(post.content)} min read`}</span>
           </div>
-          <h3 className="mt-2 font-display text-2xl font-semibold leading-tight text-ink decoration-terracotta decoration-2 underline-offset-4 group-hover:underline">
-            {post.title}
-          </h3>
-          <p className="mt-2 text-sm leading-relaxed text-ink-soft">{excerpt(post.content, 150)}</p>
+          {isPhoto ? (
+            place ? <h3 className="mt-2 font-hand text-3xl leading-tight text-ocean">{place}</h3> : null
+          ) : (
+            <>
+              <h3 className="mt-2 font-display text-2xl font-semibold leading-tight text-ink decoration-terracotta decoration-2 underline-offset-4 group-hover:underline">
+                {post.title}
+              </h3>
+              <p className="mt-2 text-sm leading-relaxed text-ink-soft">{excerpt(post.content, 150)}</p>
+            </>
+          )}
         </div>
       </Link>
 
