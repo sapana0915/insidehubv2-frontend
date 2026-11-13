@@ -5,6 +5,8 @@ import { ProtectedRoute } from "./components/layout/ProtectedRoute";
 import Landing from "./pages/Landing";
 
 const Login = lazy(() => import("./pages/Login"));
+const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const Register = lazy(() => import("./pages/Register"));
 const Explore = lazy(() => import("./pages/Explore"));
 const PostDetail = lazy(() => import("./pages/PostDetail"));
@@ -24,6 +26,8 @@ export default function App() {
       <Route element={<Layout />}>
         <Route index element={<Landing />} />
         <Route path="login" element={<Login />} />
+        <Route path="forgot-password" element={<ForgotPassword />} />
+        <Route path="reset-password" element={<ResetPassword />} />
         <Route path="register" element={<Register />} />
         <Route path="explore" element={<Explore key="all" />} />
         <Route path="c/:slug" element={<CategoryRoute />} />

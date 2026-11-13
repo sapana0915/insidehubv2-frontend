@@ -77,8 +77,22 @@ export interface Comment {
   author_id: string;
   author: CommentAuthor | null;
   content: string;
+  like_count: number;
+  liked: boolean;
   created_at: string;
   updated_at: string;
+}
+
+export interface LikeStatus {
+  post_id: string;
+  like_count: number;
+  liked: boolean;
+}
+
+export interface CommentLikeStatus {
+  comment_id: string;
+  like_count: number;
+  liked: boolean;
 }
 
 export interface PostFilters {

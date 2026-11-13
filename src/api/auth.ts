@@ -15,3 +15,13 @@ export async function register(input: RegisterInput): Promise<Token> {
   const { data } = await api.post<Token>("/users/register", input);
   return data;
 }
+
+export async function forgotPassword(email: string): Promise<{ message: string }> {
+  const { data } = await api.post<{ message: string }>("/users/forgot-password", { email });
+  return data;
+}
+
+export async function resetPassword(token: string, password: string): Promise<{ message: string }> {
+  const { data } = await api.post<{ message: string }>("/users/reset-password", { token, password });
+  return data;
+}

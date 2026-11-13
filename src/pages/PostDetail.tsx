@@ -15,6 +15,7 @@ import { EmptyState, RouteLine, Spinner } from "../components/ui/Decor";
 import { Button, ButtonLink } from "../components/ui/Button";
 import { FormError } from "../components/ui/Field";
 import { Comments } from "../components/comments/Comments";
+import { LikeButton } from "../components/likes/LikeButton";
 
 export default function PostDetail() {
   const { id } = useParams();
@@ -86,6 +87,10 @@ export default function PostDetail() {
             <Postmark date={post.created_at} label={`${meta.name.toUpperCase()} · INSIDEHUB ·`} size={64} />
           </div>
 
+          <div className="mt-6">
+            <LikeButton postId={post.id} />
+          </div>
+
           {isOwner ? (
             <div className="mt-6 flex flex-wrap gap-3">
               <ButtonLink to={`/p/${post.id}/edit`} variant="ghost" size="sm" icon={<Pencil className="h-3.5 w-3.5" />}>
@@ -145,6 +150,10 @@ export default function PostDetail() {
           <Gallery images={rest} />
         </section>
       ) : null}
+
+      <div className="mx-auto mt-16 flex max-w-2xl px-4 sm:px-6">
+        <LikeButton postId={post.id} />
+      </div>
 
       <Comments postId={post.id} />
 

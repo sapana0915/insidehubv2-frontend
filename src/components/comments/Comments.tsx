@@ -7,6 +7,7 @@ import { useAuth } from "../../context/AuthContext";
 import { useComments, useCreateComment, useDeleteComment, useUpdateComment } from "../../hooks/comments";
 import { displayName, formatDate } from "../../lib/format";
 import type { Comment } from "../../types";
+import { CommentLikeButton } from "../likes/CommentLikeButton";
 import { Button, ButtonLink } from "../ui/Button";
 import { Spinner } from "../ui/Decor";
 import { FormError, Textarea } from "../ui/Field";
@@ -161,8 +162,9 @@ function CommentNote({
         <p className="mt-3 whitespace-pre-line font-display text-lg leading-relaxed text-ink/90">{comment.content}</p>
       )}
 
-      {!editing && (canEdit || canDelete) ? (
-        <div className="mt-4 flex flex-wrap gap-3">
+      {!editing ? (
+        <div className="mt-4 flex flex-wrap items-center gap-3">
+          <CommentLikeButton comment={comment} onChange={onChanged} />
           {canEdit ? (
             <Button
               variant="ghost"
