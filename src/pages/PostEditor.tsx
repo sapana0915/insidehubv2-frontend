@@ -7,6 +7,7 @@ import { errorMessage } from "../api/client";
 import { CATEGORIES, PHOTOGRAPHY_SLUG } from "../lib/categories";
 import { readingTime } from "../lib/format";
 import { ImagePicker, type DraftImage } from "../components/posts/ImagePicker";
+import { WritingHelper } from "../components/posts/WritingHelper";
 import { Textarea, FormError } from "../components/ui/Field";
 import { Button } from "../components/ui/Button";
 import { Spinner } from "../components/ui/Decor";
@@ -146,6 +147,18 @@ export default function PostEditor() {
             </p>
           ) : null}
         </fieldset>
+
+        {isPhoto || isEdit ? null : (
+          <WritingHelper
+            category={category}
+            title={title}
+            content={content}
+            onDraft={(draftTitle, draftContent) => {
+              setTitle(draftTitle);
+              setContent(draftContent);
+            }}
+          />
+        )}
 
         {isPhoto ? null : (
         <label className="block">
