@@ -6,8 +6,20 @@ import type { DraftLength, DraftTone, DraftUsage } from "../../types";
 import { FormError, Input, Textarea } from "../ui/Field";
 import { Button } from "../ui/Button";
 
-const MIN_NOTES_LENGTH = 20;
+const MIN_PROMPT_LENGTH = 10;
 const MAX_METER_DOTS = 12;
+
+const PROMPT_EXAMPLES: Record<string, string> = {
+  "travel-stories":
+    "My first solo trip to Goa last month. I was nervous at the airport, rented a scooter, and spent most evenings at Palolem beach watching the sunset.",
+  food: "The dal baati I ate near Amber Fort in Jaipur. Heavy, full of ghee, we ate it with our hands and had to sit for a while after.",
+  culture: "Ganesh Chaturthi in our building this year. Everyone cooked modak together and the kids carried the idol down on the last day.",
+  adventure: "Trekking to Triund last weekend. The last stretch was steep and rocky, my legs were shaking, but the view of the snow peaks was worth it.",
+  lifestyle: "My new habit of a 20 minute walk without my phone every morning. I notice more and I'm calmer at work.",
+  tech: "Review of my Kindle Paperwhite after 3 months. Great for trains, battery lasts weeks, but the store is annoying to browse.",
+  art: "A watercolour of my grandmother's garden I painted over two weekends. The greens kept turning muddy until I let layers dry.",
+  other: "What I learned from my first year of living alone in Pune.",
+};
 
 const selectClass =
   "mt-2 w-full border-0 border-b-2 border-ink/25 bg-transparent py-2 text-ink focus:border-terracotta focus:outline-none";
@@ -49,47 +61,54 @@ export function WritingHelper({ category, title, content, onDraft }: WritingHelp
   const [open, setOpen] = useState(false);
   const usage = useDraftUsage();
   const draftPost = useDraftPost();
-  const [notes, setNotes] = useState("");
-  const [where, setWhere] = useState("");
-  const [when, setWhen] = useState("");
-  const [who, setWho] = useState("");
-  const [detail, setDetail] = useState("");
-  const [feeling, setFeeling] = useState("");
+  const [prompt, setPrompt] = useState("");
   const [length, setLength] = useState<DraftLength>("medium");
   const [tone, setTone] = useState<DraftTone>("warm");
+  const [questions, setQuestions] = useState<string[] | null>(null);
+  const [answers, setAnswers] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
   const lastDraft = useRef<{ title: string; content: string } | null>(null);
 
-  const remaining = usage.data?.remaining;
-  const outOfDrafts = remaining === 0;
+  const outOfDrafts = usage.data?.remaining === 0;
   const drafted = lastDraft.current !== null;
   const editedByHand =
     Boolean(title.trim() || content.trim()) &&
     (lastDraft.current === null || lastDraft.current.title !== title || lastDraft.current.content !== content);
 
+  function startOver() {
+    setQuestions(null);
+    setAnswers([]);
+    setError(null);
+  }
+
   async function generate() {
     setError(null);
-    if (notes.trim().length < MIN_NOTES_LENGTH) {
-      setError("Tell a little more about what happened. A sentence or two is enough.");
+    if (prompt.trim().length < MIN_PROMPT_LENGTH) {
+      setError("Tell us a little about what you want to write.");
+      return;
+    }
+    const answered = (questions ?? [])
+      .map((question, i) => ({ question, answer: (answers[i] ?? "").trim() }))
+      .filter((item) => item.answer);
+    if (questions && answered.length === 0) {
+      setError("Answer at least one question so the draft has something real to work with.");
       return;
     }
     if (editedByHand && !window.confirm("Replace your title and story with a new draft?")) {
       return;
     }
     try {
-      const draft = await draftPost.mutateAsync({
-        category,
-        notes: notes.trim(),
-        where: where.trim() || undefined,
-        when: when.trim() || undefined,
-        who: who.trim() || undefined,
-        detail: detail.trim() || undefined,
-        feeling: feeling.trim() || undefined,
-        length,
-        tone,
-      });
-      lastDraft.current = { title: draft.title, content: draft.content };
+      const result = await draftPost.mutateAsync({ category, prompt: prompt.trim(), answers: answered, length, tone });
+      if (result.status === "questions") {
+        setQuestions(result.questions);
+        setAnswers(result.questions.map(() => ""));
+        return;
+      }
+      const draft = { title: result.title ?? "", content: result.content ?? "" };
+      lastDraft.current = draft;
       onDraft(draft.title, draft.content);
+      setQuestions(null);
+      setAnswers([]);
     } catch (err) {
       setError(errorMessage(err, "Couldn't draft this entry."));
     }
@@ -104,7 +123,7 @@ export function WritingHelper({ category, title, content, onDraft }: WritingHelp
     return (
       <div className="flex flex-wrap items-center justify-between gap-4 border border-dashed border-ink/25 px-5 py-4">
         <div className="space-y-2">
-          <p className="text-sm text-ink-soft">Not sure how to start? Jot down what happened and get a first draft to edit.</p>
+          <p className="text-sm text-ink-soft">Not sure how to start? Tell us what it's about and get a first draft to edit.</p>
           {usage.data ? <UsageMeter usage={usage.data} /> : null}
         </div>
         <Button
@@ -126,8 +145,8 @@ export function WritingHelper({ category, title, content, onDraft }: WritingHelp
         <div>
           <p className="eyebrow">Writing helper</p>
           <p className="mt-1 max-w-xl text-sm text-ink-soft">
-            Write it the way you'd tell a friend. Only what you write here goes into the draft, so the more you
-            share, the richer the story.
+            Write it the way you'd tell a friend. Only what you share goes into the post, so include what
+            happened, what you noticed, and how it felt.
           </p>
         </div>
         <button
@@ -145,27 +164,13 @@ export function WritingHelper({ category, title, content, onDraft }: WritingHelp
       <FormError message={error} />
 
       <Textarea
-        label="What happened"
-        name="ai-notes"
+        label="What do you want to write about?"
+        name="ai-prompt"
         rows={5}
         maxLength={4000}
-        value={notes}
-        onChange={(e) => setNotes(e.target.value)}
-        placeholder="Went to Jaipur with my sister. Ate dal baati near the fort. The morning was cold and we got lost twice."
-      />
-
-      <div className="grid gap-6 sm:grid-cols-2">
-        <Input label="Place (optional)" name="ai-where" maxLength={200} value={where} onChange={(e) => setWhere(e.target.value)} />
-        <Input label="When (optional)" name="ai-when" maxLength={200} value={when} onChange={(e) => setWhen(e.target.value)} />
-        <Input label="Who was there (optional)" name="ai-who" maxLength={200} value={who} onChange={(e) => setWho(e.target.value)} />
-        <Input label="How it felt (optional)" name="ai-feeling" maxLength={300} value={feeling} onChange={(e) => setFeeling(e.target.value)} />
-      </div>
-      <Input
-        label="One detail you remember (optional)"
-        name="ai-detail"
-        maxLength={500}
-        value={detail}
-        onChange={(e) => setDetail(e.target.value)}
+        value={prompt}
+        onChange={(e) => setPrompt(e.target.value)}
+        placeholder={PROMPT_EXAMPLES[category] ?? PROMPT_EXAMPLES.other}
       />
 
       <div className="grid gap-6 sm:grid-cols-2">
@@ -187,6 +192,24 @@ export function WritingHelper({ category, title, content, onDraft }: WritingHelp
         </label>
       </div>
 
+      {questions ? (
+        <div className="space-y-5 border-l-4 border-ocean/40 pl-5">
+          <p className="text-sm text-ink-soft">
+            A few quick questions so the post sounds like you. Answer the ones you can, skip the rest.
+          </p>
+          {questions.map((question, i) => (
+            <Input
+              key={question}
+              label={question}
+              name={`ai-answer-${i}`}
+              maxLength={1000}
+              value={answers[i] ?? ""}
+              onChange={(e) => setAnswers((prev) => prev.map((a, j) => (j === i ? e.target.value : a)))}
+            />
+          ))}
+        </div>
+      ) : null}
+
       <div className="flex flex-wrap items-center gap-4 border-t border-ink/10 pt-5">
         {outOfDrafts ? (
           <p className="text-sm text-ink-soft">
@@ -199,11 +222,20 @@ export function WritingHelper({ category, title, content, onDraft }: WritingHelp
             icon={<Sparkles className="h-3.5 w-3.5" />}
             onClick={generate}
           >
-            {drafted ? "Try another version" : "Draft my entry"}
+            {questions ? "Write my draft" : drafted ? "Try another version" : "Draft my entry"}
           </Button>
         )}
-        {draftPost.isPending ? <p className="text-sm text-ink-soft">Writing your draft. This can take a few seconds…</p> : null}
-        {drafted && !draftPost.isPending ? (
+        {questions && !draftPost.isPending ? (
+          <button
+            type="button"
+            onClick={startOver}
+            className="font-mono text-[0.65rem] uppercase tracking-[0.14em] text-ink-soft hover:text-ink"
+          >
+            Change my request
+          </button>
+        ) : null}
+        {draftPost.isPending ? <p className="text-sm text-ink-soft">Working on it. This can take a few seconds…</p> : null}
+        {drafted && !questions && !draftPost.isPending ? (
           <p className="text-sm text-ocean">
             Your draft is in the title and story below. Change anything you like before you post.
           </p>

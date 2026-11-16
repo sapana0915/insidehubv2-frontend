@@ -120,21 +120,24 @@ export interface SendCodeResult {
 export type DraftLength = "short" | "medium" | "long";
 export type DraftTone = "warm" | "simple" | "lively";
 
+export interface DraftAnswer {
+  question: string;
+  answer: string;
+}
+
 export interface DraftInput {
   category: string;
-  notes: string;
-  where?: string;
-  when?: string;
-  who?: string;
-  detail?: string;
-  feeling?: string;
+  prompt: string;
+  answers?: DraftAnswer[];
   length: DraftLength;
   tone: DraftTone;
 }
 
 export interface Draft {
-  title: string;
-  content: string;
+  status: "draft" | "questions";
+  title: string | null;
+  content: string | null;
+  questions: string[];
   remaining_today: number;
 }
 
