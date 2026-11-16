@@ -17,6 +17,30 @@ export function useComments(postId: string) {
   });
 }
 
+function repliesKey(postId: string, parentId: string) {
+  return ["comments", postId, "replies", parentId] as const;
+}
+
+export function useReplies(postId: string, parentId: string, enabled: boolean) {
+  return useInfiniteQuery({
+    queryKey: repliesKey(postId, parentId),
+    queryFn: ({ pageParam }) => commentsApi.listReplies(parentId, pageParam, commentsApi.COMMENT_PAGE_SIZE),
+    initialPageParam: 0,
+    getNextPageParam: (lastPage, pages) =>
+      lastPage.length < commentsApi.COMMENT_PAGE_SIZE ? undefined : pages.length * commentsApi.COMMENT_PAGE_SIZE,
+    enabled,
+  });
+}
+
+export function useCreateReply(postId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ parentId, content }: { parentId: string; content: string }) =>
+      commentsApi.createComment(postId, content, parentId),
+    onSuccess: () => qc.invalidateQueries({ queryKey: commentsKey(postId) }),
+  });
+}
+
 export function useCreateComment(postId: string) {
   const qc = useQueryClient();
   return useMutation({
@@ -60,8 +84,8 @@ export function useToggleCommentLike(postId: string) {
       liked ? likesApi.unlikeComment(id) : likesApi.likeComment(id),
     onMutate: async ({ id, liked, likeCount }) => {
       await qc.cancelQueries({ queryKey: commentsKey(postId) });
-      const previous = qc.getQueryData<InfiniteData<Comment[]>>(commentsKey(postId));
-      qc.setQueryData<InfiniteData<Comment[]>>(commentsKey(postId), (current) =>
+      const previous = qc.getQueriesData<InfiniteData<Comment[]>>({ queryKey: commentsKey(postId) });
+      qc.setQueriesData<InfiniteData<Comment[]>>({ queryKey: commentsKey(postId) }, (current) =>
         withLike(current, id, {
           liked: !liked,
           like_count: Math.max(0, likeCount + (liked ? -1 : 1)),
@@ -70,10 +94,10 @@ export function useToggleCommentLike(postId: string) {
       return { previous };
     },
     onError: (_error, _variables, context) => {
-      if (context?.previous) qc.setQueryData(commentsKey(postId), context.previous);
+      context?.previous.forEach(([key, data]) => qc.setQueryData(key, data));
     },
     onSuccess: (status) => {
-      qc.setQueryData<InfiniteData<Comment[]>>(commentsKey(postId), (current) =>
+      qc.setQueriesData<InfiniteData<Comment[]>>({ queryKey: commentsKey(postId) }, (current) =>
         withLike(current, status.comment_id, { liked: status.liked, like_count: status.like_count }),
       );
     },
