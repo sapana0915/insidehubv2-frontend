@@ -74,11 +74,13 @@ export interface CommentAuthor {
 export interface Comment {
   id: string;
   post_id: string;
+  parent_id: string | null;
   author_id: string;
   author: CommentAuthor | null;
   content: string;
   like_count: number;
   liked: boolean;
+  reply_count: number;
   created_at: string;
   updated_at: string;
 }

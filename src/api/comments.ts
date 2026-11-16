@@ -11,8 +11,15 @@ export async function listComments(postId: string, skip = 0, limit = COMMENT_PAG
   return data;
 }
 
-export async function createComment(postId: string, content: string): Promise<Comment> {
-  const { data } = await api.post<Comment>("/comments", { post_id: postId, content });
+export async function listReplies(parentId: string, skip = 0, limit = COMMENT_PAGE_SIZE): Promise<Comment[]> {
+  const { data } = await api.get<Comment[]>("/comments", {
+    params: { parent_id: parentId, skip, limit },
+  });
+  return data;
+}
+
+export async function createComment(postId: string, content: string, parentId?: string): Promise<Comment> {
+  const { data } = await api.post<Comment>("/comments", { post_id: postId, content, parent_id: parentId });
   return data;
 }
 

@@ -1,10 +1,17 @@
-import { useState, type FormEvent } from "react";
+import { useRef, useState, type FormEvent, type ReactNode, type Ref } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Pencil, Trash2 } from "lucide-react";
+import { MessageCircle, Pencil, Trash2 } from "lucide-react";
 import { MAX_COMMENT_LENGTH } from "../../api/comments";
 import { errorMessage } from "../../api/client";
 import { useAuth } from "../../context/AuthContext";
-import { useComments, useCreateComment, useDeleteComment, useUpdateComment } from "../../hooks/comments";
+import {
+  useComments,
+  useCreateComment,
+  useCreateReply,
+  useDeleteComment,
+  useReplies,
+  useUpdateComment,
+} from "../../hooks/comments";
 import { displayName, formatDate } from "../../lib/format";
 import type { Comment } from "../../types";
 import { CommentLikeButton } from "../likes/CommentLikeButton";
@@ -25,6 +32,9 @@ function NoteComposer({
   error,
   submitLabel,
   onCancel,
+  placeholder = "A line for the person who made this…",
+  autoFocus,
+  textareaRef,
 }: {
   label: string;
   value: string;
@@ -34,6 +44,9 @@ function NoteComposer({
   error?: string | null;
   submitLabel: string;
   onCancel?: () => void;
+  placeholder?: string;
+  autoFocus?: boolean;
+  textareaRef?: Ref<HTMLTextAreaElement>;
 }) {
   const remaining = MAX_COMMENT_LENGTH - value.trim().length;
   const tooLong = remaining < 0;
@@ -48,12 +61,14 @@ function NoteComposer({
   return (
     <form onSubmit={handleSubmit} className="mt-4">
       <Textarea
+        ref={textareaRef}
         label={label}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         rows={3}
         maxLength={MAX_COMMENT_LENGTH + 40}
-        placeholder="A line for the person who made this…"
+        placeholder={placeholder}
+        autoFocus={autoFocus}
         onKeyDown={(e) => {
           if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
             e.preventDefault();
@@ -92,6 +107,9 @@ function CommentNote({
   canDelete,
   onChanged,
   onRemoved,
+  onReply,
+  postAuthorId,
+  children,
 }: {
   comment: Comment;
   postId: string;
@@ -99,6 +117,9 @@ function CommentNote({
   canDelete: boolean;
   onChanged: (comment: Comment) => void;
   onRemoved: (id: string) => void;
+  onReply?: () => void;
+  postAuthorId?: string;
+  children?: ReactNode;
 }) {
   const update = useUpdateComment(postId);
   const remove = useDeleteComment(postId);
@@ -106,6 +127,8 @@ function CommentNote({
   const [draft, setDraft] = useState(comment.content);
   const [confirming, setConfirming] = useState(false);
   const name = displayName(comment.author);
+  const isReply = Boolean(comment.parent_id);
+  const isPostAuthor = Boolean(postAuthorId && comment.author_id === postAuthorId);
 
   async function save() {
     try {
@@ -127,15 +150,28 @@ function CommentNote({
   }
 
   return (
-    <article className="border-l-2 border-mustard bg-card/80 px-5 py-4">
+    <article className={isReply ? "border-l-2 border-ocean/50 bg-paper/70 px-4 py-3" : "border-l-2 border-mustard bg-card/80 px-5 py-4"}>
       <header className="flex items-start justify-between gap-4">
         <Link to={`/u/${comment.author_id}`} className="group flex min-w-0 items-center gap-3">
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border-2 border-ink bg-mustard font-display text-base font-semibold">
+          <span
+            className={`flex shrink-0 items-center justify-center rounded-full border-2 border-ink bg-mustard font-display font-semibold ${
+              isReply ? "h-7 w-7 text-sm" : "h-9 w-9 text-base"
+            }`}
+          >
             {name.charAt(0).toUpperCase()}
           </span>
           <span className="min-w-0">
-            <span className="block truncate font-hand text-2xl leading-none text-ocean group-hover:text-terracotta">{name}</span>
-            {comment.author ? <span className="font-mono text-[0.65rem] text-ink-faint">@{comment.author.username}</span> : null}
+            <span
+              className={`block truncate font-hand leading-none text-ocean group-hover:text-terracotta ${isReply ? "text-xl" : "text-2xl"}`}
+            >
+              {name}
+            </span>
+            {comment.author ? (
+              <span className="font-mono text-[0.65rem] text-ink-faint">
+                @{comment.author.username}
+                {isPostAuthor ? <span className="ml-2 uppercase tracking-[0.16em] text-terracotta">· Author</span> : null}
+              </span>
+            ) : null}
           </span>
         </Link>
         <time className="shrink-0 pt-1 font-mono text-[0.65rem] tracking-wide text-ink-faint" dateTime={comment.created_at}>
@@ -159,12 +195,26 @@ function CommentNote({
           }}
         />
       ) : (
-        <p className="mt-3 whitespace-pre-line font-display text-lg leading-relaxed text-ink/90">{comment.content}</p>
+        <p
+          className={`mt-3 whitespace-pre-line font-display leading-relaxed text-ink/90 ${isReply ? "text-base" : "text-lg"}`}
+        >
+          {comment.content}
+        </p>
       )}
 
       {!editing ? (
         <div className="mt-4 flex flex-wrap items-center gap-3">
           <CommentLikeButton comment={comment} onChange={onChanged} />
+          {onReply ? (
+            <button
+              type="button"
+              onClick={onReply}
+              className="inline-flex items-center gap-1.5 font-mono text-[0.65rem] uppercase tracking-[0.16em] text-ink-faint transition hover:text-ocean"
+            >
+              <MessageCircle className="h-3.5 w-3.5" aria-hidden />
+              Reply
+            </button>
+          ) : null}
           {canEdit ? (
             <Button
               variant="ghost"
@@ -202,11 +252,135 @@ function CommentNote({
           <FormError message={errorMessage(remove.error)} />
         </div>
       ) : null}
+      {children}
     </article>
   );
 }
 
-export function Comments({ postId }: { postId: string }) {
+function ignore() {}
+
+function CommentThread({
+  comment,
+  postId,
+  postAuthorId,
+  onChanged,
+  onRemoved,
+}: {
+  comment: Comment;
+  postId: string;
+  postAuthorId?: string;
+  onChanged: (comment: Comment) => void;
+  onRemoved: (id: string) => void;
+}) {
+  const { user } = useAuth();
+  const [open, setOpen] = useState(false);
+  const [replying, setReplying] = useState(false);
+  const [draft, setDraft] = useState("");
+  const replyBox = useRef<HTMLTextAreaElement>(null);
+  const replies = useReplies(postId, comment.id, open);
+  const create = useCreateReply(postId);
+  const items = replies.data?.pages.flat() ?? [];
+  const count = Math.max(comment.reply_count ?? 0, items.length);
+  const canManage = (target: Comment) => Boolean(user && (user.id === target.author_id || user.is_admin));
+
+  function startReply(target: Comment) {
+    setOpen(true);
+    setReplying(true);
+    if (target.author) {
+      const mention = `@${target.author.username} `;
+      setDraft((current) => mention + current.replace(/^@\S+\s*/, ""));
+    }
+    requestAnimationFrame(() => {
+      const box = replyBox.current;
+      if (!box) return;
+      box.focus();
+      box.setSelectionRange(box.value.length, box.value.length);
+    });
+  }
+
+  async function publish() {
+    try {
+      await create.mutateAsync({ parentId: comment.id, content: draft.trim() });
+      setDraft("");
+      setReplying(false);
+      setOpen(true);
+    } catch {
+      // The composer shows create.error.
+    }
+  }
+
+  return (
+    <CommentNote
+      comment={comment}
+      postId={postId}
+      postAuthorId={postAuthorId}
+      canEdit={canManage(comment)}
+      canDelete={canManage(comment)}
+      onChanged={onChanged}
+      onRemoved={onRemoved}
+      onReply={user ? () => startReply(comment) : undefined}
+    >
+      {count > 0 ? (
+        <button
+          type="button"
+          onClick={() => setOpen((current) => !current)}
+          aria-expanded={open}
+          className="mt-4 font-mono text-[0.65rem] uppercase tracking-[0.16em] text-ocean transition hover:text-terracotta"
+        >
+          {open ? "Hide replies" : `View ${count} ${count === 1 ? "reply" : "replies"}`}
+        </button>
+      ) : null}
+
+      {open && (count > 0 || replies.isPending) ? (
+        <div className="mt-4 space-y-3 border-l border-dashed border-ink/20 pl-4 sm:pl-6">
+          {replies.isPending ? <Spinner label="Gathering replies…" /> : null}
+          {replies.isError ? <FormError message={errorMessage(replies.error)} /> : null}
+          {items.map((reply) => (
+            <CommentNote
+              key={reply.id}
+              comment={reply}
+              postId={postId}
+              postAuthorId={postAuthorId}
+              canEdit={canManage(reply)}
+              canDelete={canManage(reply)}
+              onChanged={ignore}
+              onRemoved={ignore}
+              onReply={user ? () => startReply(reply) : undefined}
+            />
+          ))}
+          {replies.hasNextPage ? (
+            <Button variant="ghost" size="sm" onClick={() => replies.fetchNextPage()} loading={replies.isFetchingNextPage}>
+              More replies
+            </Button>
+          ) : null}
+        </div>
+      ) : null}
+
+      {replying && user ? (
+        <div className="pl-4 sm:pl-6">
+          <NoteComposer
+            label={`Reply to ${displayName(comment.author)}`}
+            value={draft}
+            onChange={setDraft}
+            onSubmit={publish}
+            pending={create.isPending}
+            error={create.isError ? errorMessage(create.error) : null}
+            submitLabel="Send the reply"
+            placeholder="Write a reply…"
+            autoFocus
+            textareaRef={replyBox}
+            onCancel={() => {
+              setDraft("");
+              setReplying(false);
+            }}
+          />
+        </div>
+      ) : null}
+    </CommentNote>
+  );
+}
+
+export function Comments({ postId, postAuthorId }: { postId: string; postAuthorId?: string }) {
   const { user } = useAuth();
   const location = useLocation();
   const feed = useComments(postId);
@@ -254,12 +428,11 @@ export function Comments({ postId }: { postId: string }) {
           <p className="font-hand text-3xl text-ocean">The margin is still blank.</p>
         ) : null}
         {loaded.map((comment) => (
-          <CommentNote
+          <CommentThread
             key={comment.id}
             comment={comment}
             postId={postId}
-            canEdit={Boolean(user && (user.id === comment.author_id || user.is_admin))}
-            canDelete={Boolean(user && (user.id === comment.author_id || user.is_admin))}
+            postAuthorId={postAuthorId}
             onChanged={(next) => setFresh((current) => current.map((item) => (item.id === next.id ? next : item)))}
             onRemoved={(id) => setFresh((current) => current.filter((item) => item.id !== id))}
           />
@@ -272,12 +445,11 @@ export function Comments({ postId }: { postId: string }) {
           </div>
         ) : null}
         {pendingNotes.map((comment) => (
-          <CommentNote
+          <CommentThread
             key={comment.id}
             comment={comment}
             postId={postId}
-            canEdit={Boolean(user && (user.id === comment.author_id || user.is_admin))}
-            canDelete={Boolean(user && (user.id === comment.author_id || user.is_admin))}
+            postAuthorId={postAuthorId}
             onChanged={(next) => setFresh((current) => current.map((item) => (item.id === next.id ? next : item)))}
             onRemoved={(id) => setFresh((current) => current.filter((item) => item.id !== id))}
           />

@@ -155,7 +155,7 @@ export default function PostDetail() {
         <LikeButton postId={post.id} />
       </div>
 
-      <Comments postId={post.id} />
+      <Comments postId={post.id} postAuthorId={post.author_id} />
 
       <section className="mx-auto mt-20 max-w-7xl px-4 sm:px-6">
         <RouteLine className="mb-10" />
