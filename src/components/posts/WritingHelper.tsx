@@ -5,6 +5,7 @@ import { errorMessage } from "../../api/client";
 import type { DraftLength, DraftSource, DraftTone, DraftUsage } from "../../types";
 import { FormError, Input, Textarea } from "../ui/Field";
 import { Button } from "../ui/Button";
+import { plainTextToHtml, stripHtml } from "../../lib/html";
 
 const MIN_PROMPT_LENGTH = 10;
 const MAX_METER_DOTS = 12;
@@ -76,8 +77,10 @@ export function WritingHelper({ category, title, content, onDraft }: WritingHelp
   const useWebSearch = searchAvailable && newsMode;
   const drafted = lastDraft.current !== null;
   const editedByHand =
-    Boolean(title.trim() || content.trim()) &&
-    (lastDraft.current === null || lastDraft.current.title !== title || lastDraft.current.content !== content);
+    Boolean(title.trim() || stripHtml(content)) &&
+    (lastDraft.current === null ||
+      lastDraft.current.title !== title ||
+      stripHtml(lastDraft.current.content) !== stripHtml(content));
 
   function startOver() {
     setQuestions(null);
@@ -115,7 +118,10 @@ export function WritingHelper({ category, title, content, onDraft }: WritingHelp
         setAnswers(result.questions.map(() => ""));
         return;
       }
-      const draft = { title: result.title ?? "", content: result.content ?? "" };
+      const draft = {
+        title: result.title ?? "",
+        content: plainTextToHtml(result.content ?? ""),
+      };
       lastDraft.current = draft;
       onDraft(draft.title, draft.content);
       setSources(result.sources);

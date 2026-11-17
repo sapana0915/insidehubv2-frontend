@@ -8,9 +8,11 @@ import { CATEGORIES, PHOTOGRAPHY_SLUG } from "../lib/categories";
 import { readingTime } from "../lib/format";
 import { ImagePicker, type DraftImage } from "../components/posts/ImagePicker";
 import { WritingHelper } from "../components/posts/WritingHelper";
-import { Textarea, FormError } from "../components/ui/Field";
+import { RichTextEditor } from "../components/posts/RichTextEditor";
+import { FormError } from "../components/ui/Field";
 import { Button } from "../components/ui/Button";
 import { Spinner } from "../components/ui/Decor";
+import { ensureHtml, isEmptyHtml } from "../lib/html";
 
 const CATEGORY_SLUGS = new Set(CATEGORIES.map((c) => c.slug));
 
@@ -39,7 +41,7 @@ export default function PostEditor() {
   useEffect(() => {
     if (isEdit && existing.data && !hydrated) {
       setTitle(existing.data.title);
-      setContent(existing.data.content);
+      setContent(ensureHtml(existing.data.content));
       setCategory(existing.data.category);
       setImages(existing.data.images.map((i) => ({ url: i.image_url, placeName: i.place_name ?? "" })));
       setHydrated(true);
@@ -69,7 +71,7 @@ export default function PostEditor() {
         setError("Add at least one photo.");
         return;
       }
-    } else if (!title.trim() || !content.trim()) {
+    } else if (!title.trim() || isEmptyHtml(content)) {
       setError("Every entry needs a title and a story.");
       return;
     }
@@ -105,7 +107,7 @@ export default function PostEditor() {
           <p className="mt-1 font-hand text-2xl text-ocean">
             {isPhoto
               ? `${images.length} photo${images.length === 1 ? "" : "s"}`
-              : content.trim()
+              : !isEmptyHtml(content)
                 ? `${readingTime(content)} min read · ${images.length} photo${images.length === 1 ? "" : "s"}`
                 : "dear diary…"}
           </p>
@@ -185,14 +187,12 @@ export default function PostEditor() {
         <ImagePicker value={images} onChange={setImages} placeNames={isPhoto} />
 
         {isPhoto ? null : (
-        <Textarea
+        <RichTextEditor
           label="The story"
-          name="content"
-          rows={16}
           value={content}
-          onChange={(e) => setContent(e.target.value)}
-          placeholder="Where were you? What did it smell like? Leave a blank line between paragraphs."
-          hint="Plain text. A blank line starts a new paragraph."
+          onChange={setContent}
+          placeholder="Where were you? What did it smell like?"
+          hint="Use the toolbar for bold, italic, lists, headings, and links — like a simple Word doc."
         />
         )}
 
