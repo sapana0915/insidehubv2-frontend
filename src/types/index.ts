@@ -131,6 +131,12 @@ export interface DraftInput {
   answers?: DraftAnswer[];
   length: DraftLength;
   tone: DraftTone;
+  use_web_search?: boolean;
+}
+
+export interface DraftSource {
+  title: string;
+  url: string;
 }
 
 export interface Draft {
@@ -138,6 +144,7 @@ export interface Draft {
   title: string | null;
   content: string | null;
   questions: string[];
+  sources: DraftSource[];
   remaining_today: number;
 }
 
@@ -145,6 +152,7 @@ export interface DraftUsage {
   limit: number;
   used: number;
   remaining: number;
+  web_search_categories: string[];
 }
 
 export interface UserUpdateInput {

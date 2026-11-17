@@ -5,8 +5,8 @@
   --color-paper-deep: #ebe2d3;
   --color-paper-shade: #ddd1bd;
   --color-ink: #1f1b16;
-  --color-ink-soft: #5b5247;
-  --color-ink-faint: #8f8576;
+  --color-ink-soft: #1f1b16;
+  --color-ink-faint: #1f1b16;
   --color-terracotta: #c65d3b;
   --color-terracotta-deep: #a4472a;
   --color-sage: #7a8b6f;
@@ -129,6 +129,6 @@
     font-size: 0.7rem;
     letter-spacing: 0.22em;
     text-transform: uppercase;
-    color: var(--color-ink-soft);
+    color: var(--color-ink);
   }
 }

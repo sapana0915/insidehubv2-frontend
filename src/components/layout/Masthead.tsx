@@ -1,9 +1,17 @@
 import { useState } from "react";
-import { Link, NavLink, useNavigate } from "react-router-dom";
+import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { LogOut, Menu, PenLine, X } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { CATEGORIES } from "../../lib/categories";
 import { ButtonLink } from "../ui/Button";
+
+const CATEGORY_SLUGS = new Set(CATEGORIES.map((c) => c.slug));
+
+function writePath(pathname: string): string {
+  const match = pathname.match(/^\/c\/([^/]+)/);
+  const slug = match?.[1];
+  return slug && CATEGORY_SLUGS.has(slug) ? `/new?category=${encodeURIComponent(slug)}` : "/new";
+}
 
 const today = new Date().toLocaleDateString("en-GB", {
   weekday: "long",
@@ -12,11 +20,11 @@ const today = new Date().toLocaleDateString("en-GB", {
   year: "numeric",
 });
 
-const navCategories = CATEGORIES.slice(0, 6);
-
 export function Masthead() {
   const { isAuthenticated, user, logout } = useAuth();
   const navigate = useNavigate();
+  const { pathname } = useLocation();
+  const newEntryPath = writePath(pathname);
   const [open, setOpen] = useState(false);
 
   const handleLogout = () => {
@@ -28,28 +36,28 @@ export function Masthead() {
   return (
     <header className="sticky top-0 z-40 border-b border-ink/10 bg-paper/90 backdrop-blur-sm">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
-        <div className="hidden items-center justify-between border-b border-ink/10 py-1.5 font-mono text-[0.62rem] uppercase tracking-[0.22em] text-ink-soft md:flex">
+        <div className="hidden items-center justify-between border-b border-ink/10 py-1.5 font-mono text-[0.62rem] uppercase tracking-[0.22em] text-ink md:flex">
           <span>Vol. 01 · Est. 2026</span>
           <span>{today}</span>
           <span>Blogs · Photos · Travel Stories</span>
         </div>
 
         <div className="flex items-center justify-between gap-4 py-3">
-          <Link to="/" className="group flex items-baseline gap-2" onClick={() => setOpen(false)}>
+          <Link to="/" className="group flex shrink-0 flex-col items-start leading-none" onClick={() => setOpen(false)}>
             <span className="font-display text-3xl font-semibold italic tracking-tight text-ink md:text-4xl">
               Inside<span className="text-terracotta">Hub</span>
             </span>
-            <span className="hidden font-hand text-xl text-ocean sm:inline">field journal</span>
+            <span className="mt-0.5 font-hand text-xl leading-none text-ocean">field journal</span>
           </Link>
 
-          <nav className="hidden items-center gap-6 lg:flex" aria-label="Main">
+          <nav className="hidden min-w-0 flex-1 flex-wrap items-center justify-center gap-x-3 gap-y-1.5 px-2 lg:flex" aria-label="Main">
             <NavLink
               to="/explore"
               className={({ isActive }) => `eyebrow hover:text-terracotta ${isActive ? "!text-terracotta" : ""}`}
             >
               Explore
             </NavLink>
-            {navCategories.map((c) => (
+            {CATEGORIES.map((c) => (
               <NavLink
                 key={c.slug}
                 to={`/c/${c.slug}`}
@@ -60,10 +68,10 @@ export function Masthead() {
             ))}
           </nav>
 
-          <div className="hidden items-center gap-3 md:flex">
+          <div className="hidden shrink-0 items-center gap-3 md:flex">
             {isAuthenticated ? (
               <>
-                <ButtonLink to="/new" size="sm" icon={<PenLine className="h-3.5 w-3.5" />}>
+                <ButtonLink to={newEntryPath} size="sm" icon={<PenLine className="h-3.5 w-3.5" />}>
                   Write
                 </ButtonLink>
                 <Link
@@ -73,7 +81,7 @@ export function Masthead() {
                 >
                   {(user?.full_name || user?.username || "?").charAt(0).toUpperCase()}
                 </Link>
-                <button onClick={handleLogout} className="text-ink-soft hover:text-terracotta" aria-label="Log out" title="Log out">
+                <button onClick={handleLogout} className="text-ink hover:text-terracotta" aria-label="Log out" title="Log out">
                   <LogOut className="h-4 w-4" />
                 </button>
               </>
@@ -110,7 +118,7 @@ export function Masthead() {
             <hr className="border-ink/10" />
             {isAuthenticated ? (
               <>
-                <Link to="/new" className="eyebrow text-terracotta" onClick={() => setOpen(false)}>
+                <Link to={newEntryPath} className="eyebrow text-terracotta" onClick={() => setOpen(false)}>
                   Write a new entry
                 </Link>
                 <Link to="/me" className="eyebrow" onClick={() => setOpen(false)}>

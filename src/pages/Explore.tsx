@@ -37,7 +37,7 @@ export default function Explore() {
             <>
               <StampBadge slug={meta.slug} size="md" />
               <h1 className="mt-5 font-display text-5xl font-semibold tracking-tight md:text-6xl">{meta.name}</h1>
-              <p className="mt-3 max-w-xl text-ink-soft">{meta.description}</p>
+              <p className="mt-3 max-w-xl text-ink">{meta.description}</p>
             </>
           ) : (
             <>
@@ -45,18 +45,18 @@ export default function Explore() {
               <h1 className="mt-3 font-display text-5xl font-semibold tracking-tight md:text-6xl">
                 Every entry, <em className="text-terracotta">every</em> drawer.
               </h1>
-              <p className="mt-3 max-w-xl text-ink-soft">Newest postcards first. Pick a stamp to narrow it down.</p>
+              <p className="mt-3 max-w-xl text-ink">Newest postcards first. Pick a stamp to narrow it down.</p>
             </>
           )}
         </div>
         <label className="relative block">
           <span className="sr-only">Search entries</span>
-          <Search className="pointer-events-none absolute left-0 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-faint" />
+          <Search className="pointer-events-none absolute left-0 top-1/2 h-4 w-4 -translate-y-1/2 text-ink" />
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search titles and stories…"
-            className="w-full border-0 border-b-2 border-ink/25 bg-transparent py-3 pl-7 font-display text-lg focus:border-terracotta focus:outline-none"
+            className="w-full border-0 border-b-2 border-ink/25 bg-transparent py-3 pl-7 font-display text-lg text-ink placeholder:text-ink focus:border-terracotta focus:outline-none"
           />
         </label>
       </header>
@@ -72,7 +72,16 @@ export default function Explore() {
             <EmptyState
               title={search ? `Nothing matches “${search}”.` : meta ? `No ${meta.name.toLowerCase()} entries yet.` : "The journal is empty."}
               action={
-                <ButtonLink to={isAuthenticated ? "/new" : "/register"} size="sm">
+                <ButtonLink
+                  to={
+                    isAuthenticated
+                      ? slug
+                        ? `/new?category=${encodeURIComponent(slug)}`
+                        : "/new"
+                      : "/register"
+                  }
+                  size="sm"
+                >
                   Write one
                 </ButtonLink>
               }

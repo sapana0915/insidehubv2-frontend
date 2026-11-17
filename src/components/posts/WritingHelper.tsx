@@ -1,8 +1,8 @@
 import { useRef, useState, type KeyboardEvent } from "react";
-import { ChevronUp, Sparkles } from "lucide-react";
+import { ChevronUp, Globe, Sparkles } from "lucide-react";
 import { useDraftPost, useDraftUsage } from "../../hooks/ai";
 import { errorMessage } from "../../api/client";
-import type { DraftLength, DraftTone, DraftUsage } from "../../types";
+import type { DraftLength, DraftSource, DraftTone, DraftUsage } from "../../types";
 import { FormError, Input, Textarea } from "../ui/Field";
 import { Button } from "../ui/Button";
 
@@ -64,12 +64,16 @@ export function WritingHelper({ category, title, content, onDraft }: WritingHelp
   const [prompt, setPrompt] = useState("");
   const [length, setLength] = useState<DraftLength>("medium");
   const [tone, setTone] = useState<DraftTone>("warm");
+  const [newsMode, setNewsMode] = useState(false);
+  const [sources, setSources] = useState<DraftSource[]>([]);
   const [questions, setQuestions] = useState<string[] | null>(null);
   const [answers, setAnswers] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
   const lastDraft = useRef<{ title: string; content: string } | null>(null);
 
   const outOfDrafts = usage.data?.remaining === 0;
+  const searchAvailable = usage.data?.web_search_categories.includes(category) ?? false;
+  const useWebSearch = searchAvailable && newsMode;
   const drafted = lastDraft.current !== null;
   const editedByHand =
     Boolean(title.trim() || content.trim()) &&
@@ -98,7 +102,14 @@ export function WritingHelper({ category, title, content, onDraft }: WritingHelp
       return;
     }
     try {
-      const result = await draftPost.mutateAsync({ category, prompt: prompt.trim(), answers: answered, length, tone });
+      const result = await draftPost.mutateAsync({
+        category,
+        prompt: prompt.trim(),
+        answers: answered,
+        length,
+        tone,
+        use_web_search: useWebSearch,
+      });
       if (result.status === "questions") {
         setQuestions(result.questions);
         setAnswers(result.questions.map(() => ""));
@@ -107,6 +118,7 @@ export function WritingHelper({ category, title, content, onDraft }: WritingHelp
       const draft = { title: result.title ?? "", content: result.content ?? "" };
       lastDraft.current = draft;
       onDraft(draft.title, draft.content);
+      setSources(result.sources);
       setQuestions(null);
       setAnswers([]);
     } catch (err) {
@@ -192,6 +204,27 @@ export function WritingHelper({ category, title, content, onDraft }: WritingHelp
         </label>
       </div>
 
+      {searchAvailable ? (
+        <label className="flex cursor-pointer items-start gap-3">
+          <input
+            type="checkbox"
+            checked={newsMode}
+            onChange={(e) => setNewsMode(e.target.checked)}
+            className="mt-1 h-4 w-4 accent-terracotta"
+          />
+          <span>
+            <span className="inline-flex items-center gap-1.5 text-sm text-ink">
+              <Globe className="h-3.5 w-3.5" />
+              Write about a news event
+            </span>
+            <span className="mt-0.5 block text-xs text-ink-faint">
+              Looks up public information on the web and lists the sources at the end of the story. Takes up to a
+              minute. Check the facts before you post.
+            </span>
+          </span>
+        </label>
+      ) : null}
+
       {questions ? (
         <div className="space-y-5 border-l-4 border-ocean/40 pl-5">
           <p className="text-sm text-ink-soft">
@@ -234,13 +267,42 @@ export function WritingHelper({ category, title, content, onDraft }: WritingHelp
             Change my request
           </button>
         ) : null}
-        {draftPost.isPending ? <p className="text-sm text-ink-soft">Working on it. This can take a few seconds…</p> : null}
+        {draftPost.isPending ? (
+          <p className="text-sm text-ink-soft">
+            {useWebSearch
+              ? "Searching the web and writing your draft. This can take up to a minute…"
+              : "Working on it. This can take a few seconds…"}
+          </p>
+        ) : null}
         {drafted && !questions && !draftPost.isPending ? (
           <p className="text-sm text-ocean">
             Your draft is in the title and story below. Change anything you like before you post.
           </p>
         ) : null}
       </div>
+
+      {sources.length > 0 && !draftPost.isPending ? (
+        <div className="border-t border-ink/10 pt-4">
+          <p className="eyebrow">Sources used</p>
+          <ul className="mt-2 space-y-1">
+            {sources.map((source) => (
+              <li key={source.url} className="text-sm">
+                <a
+                  href={source.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-ocean underline decoration-ocean/40 underline-offset-2 hover:decoration-ocean"
+                >
+                  {source.title}
+                </a>
+              </li>
+            ))}
+          </ul>
+          <p className="mt-2 text-xs text-ink-faint">
+            These are also listed at the end of the story. Open them to check the facts before posting.
+          </p>
+        </div>
+      ) : null}
     </div>
   );
 }

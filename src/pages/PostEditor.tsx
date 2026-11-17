@@ -1,5 +1,5 @@
 import { useEffect, useState, type CSSProperties, type FormEvent } from "react";
-import { Navigate, useNavigate, useParams } from "react-router-dom";
+import { Navigate, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { Send } from "lucide-react";
 import { useCreatePost, usePost, useUpdatePost } from "../hooks/posts";
 import { useAuth } from "../context/AuthContext";
@@ -12,8 +12,16 @@ import { Textarea, FormError } from "../components/ui/Field";
 import { Button } from "../components/ui/Button";
 import { Spinner } from "../components/ui/Decor";
 
+const CATEGORY_SLUGS = new Set(CATEGORIES.map((c) => c.slug));
+
+function initialCategory(param: string | null): string {
+  const slug = param?.trim().toLowerCase() ?? "";
+  return CATEGORY_SLUGS.has(slug) ? slug : "travel-stories";
+}
+
 export default function PostEditor() {
   const { id } = useParams();
+  const [searchParams] = useSearchParams();
   const isEdit = Boolean(id);
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -23,7 +31,7 @@ export default function PostEditor() {
 
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  const [category, setCategory] = useState("travel-stories");
+  const [category, setCategory] = useState(() => initialCategory(searchParams.get("category")));
   const [images, setImages] = useState<DraftImage[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [hydrated, setHydrated] = useState(!isEdit);
