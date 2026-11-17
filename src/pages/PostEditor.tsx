@@ -192,7 +192,7 @@ export default function PostEditor() {
           value={content}
           onChange={setContent}
           placeholder="Where were you? What did it smell like?"
-          hint="Use the toolbar for bold, italic, lists, headings, and links — like a simple Word doc."
+          hint="Use the toolbar for headings (H1–H6), font size, bold, lists, and links."
         />
         )}
 

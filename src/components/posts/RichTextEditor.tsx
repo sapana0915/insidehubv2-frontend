@@ -1,15 +1,15 @@
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Underline from "@tiptap/extension-underline";
 import Link from "@tiptap/extension-link";
 import Placeholder from "@tiptap/extension-placeholder";
+import { TextStyle } from "@tiptap/extension-text-style";
 import {
   Bold,
   Italic,
   Underline as UnderlineIcon,
   Strikethrough,
-  Heading2,
   List,
   ListOrdered,
   Quote,
@@ -17,6 +17,7 @@ import {
   Undo2,
   Redo2,
 } from "lucide-react";
+import { FontSize } from "./fontSize";
 
 interface RichTextEditorProps {
   label?: string;
@@ -25,6 +26,24 @@ interface RichTextEditorProps {
   placeholder?: string;
   hint?: string;
 }
+
+const HEADING_LEVELS = [1, 2, 3, 4, 5, 6] as const;
+
+const FONT_SIZES = [
+  { label: "Default", value: "" },
+  { label: "12", value: "12px" },
+  { label: "14", value: "14px" },
+  { label: "16", value: "16px" },
+  { label: "18", value: "18px" },
+  { label: "20", value: "20px" },
+  { label: "24", value: "24px" },
+  { label: "28", value: "28px" },
+  { label: "32", value: "32px" },
+  { label: "36", value: "36px" },
+] as const;
+
+const toolbarSelectClass =
+  "h-8 max-w-[7.5rem] rounded-sm border-0 bg-transparent px-1.5 font-mono text-[0.65rem] uppercase tracking-[0.08em] text-ink-soft hover:bg-ink/8 hover:text-ink focus:outline-none focus-visible:bg-ink/8";
 
 function ToolbarButton({
   onClick,
@@ -56,16 +75,27 @@ function ToolbarButton({
   );
 }
 
+function currentHeadingValue(editor: NonNullable<ReturnType<typeof useEditor>>): string {
+  for (const level of HEADING_LEVELS) {
+    if (editor.isActive("heading", { level })) return String(level);
+  }
+  return "p";
+}
+
 export function RichTextEditor({ label, value, onChange, placeholder, hint }: RichTextEditorProps) {
+  const [, setToolbarTick] = useState(0);
+
   const editor = useEditor({
     immediatelyRender: false,
     extensions: [
       StarterKit.configure({
-        heading: { levels: [2, 3] },
+        heading: { levels: [...HEADING_LEVELS] },
         code: false,
         codeBlock: false,
         horizontalRule: false,
       }),
+      TextStyle,
+      FontSize,
       Underline,
       Link.configure({
         openOnClick: false,
@@ -95,6 +125,17 @@ export function RichTextEditor({ label, value, onChange, placeholder, hint }: Ri
     }
   }, [value, editor]);
 
+  useEffect(() => {
+    if (!editor) return;
+    const refresh = () => setToolbarTick((n) => n + 1);
+    editor.on("selectionUpdate", refresh);
+    editor.on("transaction", refresh);
+    return () => {
+      editor.off("selectionUpdate", refresh);
+      editor.off("transaction", refresh);
+    };
+  }, [editor]);
+
   function setLink() {
     if (!editor) return;
     const previous = editor.getAttributes("link").href as string | undefined;
@@ -108,6 +149,28 @@ export function RichTextEditor({ label, value, onChange, placeholder, hint }: Ri
     editor.chain().focus().extendMarkRange("link").setLink({ href: trimmed }).run();
   }
 
+  function onHeadingChange(next: string) {
+    if (!editor) return;
+    if (next === "p") {
+      editor.chain().focus().setParagraph().run();
+      return;
+    }
+    const level = Number(next) as (typeof HEADING_LEVELS)[number];
+    editor.chain().focus().setHeading({ level }).run();
+  }
+
+  function onFontSizeChange(next: string) {
+    if (!editor) return;
+    if (!next) {
+      editor.chain().focus().unsetFontSize().run();
+      return;
+    }
+    editor.chain().focus().setFontSize(next).run();
+  }
+
+  const headingValue = editor ? currentHeadingValue(editor) : "p";
+  const fontSizeValue = (editor?.getAttributes("textStyle").fontSize as string | undefined) ?? "";
+
   return (
     <div className="block">
       {label ? <span className="eyebrow">{label}</span> : null}
@@ -117,6 +180,44 @@ export function RichTextEditor({ label, value, onChange, placeholder, hint }: Ri
           role="toolbar"
           aria-label="Text formatting"
         >
+          <label className="sr-only" htmlFor="rte-heading">
+            Heading
+          </label>
+          <select
+            id="rte-heading"
+            className={toolbarSelectClass}
+            value={headingValue}
+            disabled={!editor}
+            onChange={(e) => onHeadingChange(e.target.value)}
+            title="Paragraph style"
+          >
+            <option value="p">Paragraph</option>
+            {HEADING_LEVELS.map((level) => (
+              <option key={level} value={level}>
+                Heading {level}
+              </option>
+            ))}
+          </select>
+
+          <label className="sr-only" htmlFor="rte-font-size">
+            Font size
+          </label>
+          <select
+            id="rte-font-size"
+            className={toolbarSelectClass}
+            value={FONT_SIZES.some((s) => s.value === fontSizeValue) ? fontSizeValue : ""}
+            disabled={!editor}
+            onChange={(e) => onFontSizeChange(e.target.value)}
+            title="Font size"
+          >
+            {FONT_SIZES.map((size) => (
+              <option key={size.label} value={size.value}>
+                {size.value ? `${size.label}px` : size.label}
+              </option>
+            ))}
+          </select>
+
+          <span className="mx-1 h-5 w-px bg-ink/15" aria-hidden />
           <ToolbarButton
             label="Bold"
             active={editor?.isActive("bold")}
@@ -147,13 +248,6 @@ export function RichTextEditor({ label, value, onChange, placeholder, hint }: Ri
             <Strikethrough className="h-3.5 w-3.5" />
           </ToolbarButton>
           <span className="mx-1 h-5 w-px bg-ink/15" aria-hidden />
-          <ToolbarButton
-            label="Heading"
-            active={editor?.isActive("heading", { level: 2 })}
-            onClick={() => editor?.chain().focus().toggleHeading({ level: 2 }).run()}
-          >
-            <Heading2 className="h-3.5 w-3.5" />
-          </ToolbarButton>
           <ToolbarButton
             label="Bullet list"
             active={editor?.isActive("bulletList")}

@@ -13,13 +13,18 @@ const ALLOWED_TAGS = [
   "ul",
   "ol",
   "li",
+  "h1",
   "h2",
   "h3",
+  "h4",
+  "h5",
+  "h6",
   "blockquote",
   "a",
+  "span",
 ];
 
-const ALLOWED_ATTR = ["href", "title", "target", "rel"];
+const ALLOWED_ATTR = ["href", "title", "target", "rel", "style"];
 
 function escapeText(value: string): string {
   return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");

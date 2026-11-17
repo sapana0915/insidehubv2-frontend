@@ -125,20 +125,41 @@
     margin: 0 0 1.5rem;
   }
 
+  .story-body h1,
   .story-body h2,
-  .story-body h3 {
+  .story-body h3,
+  .story-body h4,
+  .story-body h5,
+  .story-body h6 {
     font-family: var(--font-display);
     font-weight: 600;
     letter-spacing: -0.02em;
     margin: 2rem 0 0.75rem;
+    line-height: 1.25;
+  }
+
+  .story-body h1 {
+    font-size: 2.15rem;
   }
 
   .story-body h2 {
-    font-size: 1.65rem;
+    font-size: 1.75rem;
   }
 
   .story-body h3 {
-    font-size: 1.35rem;
+    font-size: 1.45rem;
+  }
+
+  .story-body h4 {
+    font-size: 1.25rem;
+  }
+
+  .story-body h5 {
+    font-size: 1.1rem;
+  }
+
+  .story-body h6 {
+    font-size: 1rem;
   }
 
   .story-body ul,
@@ -186,18 +207,44 @@
     margin: 0;
   }
 
-  .rich-text-editor.ProseMirror h2 {
-    font-size: 1.5rem;
+  .rich-text-editor.ProseMirror h1,
+  .rich-text-editor.ProseMirror h2,
+  .rich-text-editor.ProseMirror h3,
+  .rich-text-editor.ProseMirror h4,
+  .rich-text-editor.ProseMirror h5,
+  .rich-text-editor.ProseMirror h6 {
     font-weight: 600;
-    line-height: 32px;
     margin: 0;
   }
 
-  .rich-text-editor.ProseMirror h3 {
-    font-size: 1.25rem;
-    font-weight: 600;
+  .rich-text-editor.ProseMirror h1 {
+    font-size: 2rem;
     line-height: 32px;
-    margin: 0;
+  }
+
+  .rich-text-editor.ProseMirror h2 {
+    font-size: 1.65rem;
+    line-height: 32px;
+  }
+
+  .rich-text-editor.ProseMirror h3 {
+    font-size: 1.4rem;
+    line-height: 32px;
+  }
+
+  .rich-text-editor.ProseMirror h4 {
+    font-size: 1.2rem;
+    line-height: 32px;
+  }
+
+  .rich-text-editor.ProseMirror h5 {
+    font-size: 1.05rem;
+    line-height: 32px;
+  }
+
+  .rich-text-editor.ProseMirror h6 {
+    font-size: 0.95rem;
+    line-height: 32px;
   }
 
   .rich-text-editor.ProseMirror ul {
