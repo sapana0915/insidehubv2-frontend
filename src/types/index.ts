@@ -117,6 +117,44 @@ export interface SendCodeResult {
   resend_in: number;
 }
 
+export type DraftLength = "short" | "medium" | "long";
+export type DraftTone = "warm" | "simple" | "lively";
+
+export interface DraftAnswer {
+  question: string;
+  answer: string;
+}
+
+export interface DraftInput {
+  category: string;
+  prompt: string;
+  answers?: DraftAnswer[];
+  length: DraftLength;
+  tone: DraftTone;
+  use_web_search?: boolean;
+}
+
+export interface DraftSource {
+  title: string;
+  url: string;
+}
+
+export interface Draft {
+  status: "draft" | "questions";
+  title: string | null;
+  content: string | null;
+  questions: string[];
+  sources: DraftSource[];
+  remaining_today: number;
+}
+
+export interface DraftUsage {
+  limit: number;
+  used: number;
+  remaining: number;
+  web_search_categories: string[];
+}
+
 export interface UserUpdateInput {
   username?: string;
   full_name?: string;
