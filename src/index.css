@@ -111,6 +111,172 @@
     font-weight: 600;
   }
 
+  .story-body > p:first-of-type::first-letter {
+    float: left;
+    font-family: var(--font-display);
+    font-size: 4.2rem;
+    line-height: 0.85;
+    padding: 0.35rem 0.6rem 0 0;
+    color: var(--color-terracotta);
+    font-weight: 600;
+  }
+
+  .story-body p {
+    margin: 0 0 1.5rem;
+  }
+
+  .story-body h1,
+  .story-body h2,
+  .story-body h3,
+  .story-body h4,
+  .story-body h5,
+  .story-body h6 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    margin: 2rem 0 0.75rem;
+    line-height: 1.25;
+  }
+
+  .story-body h1 {
+    font-size: 2.15rem;
+  }
+
+  .story-body h2 {
+    font-size: 1.75rem;
+  }
+
+  .story-body h3 {
+    font-size: 1.45rem;
+  }
+
+  .story-body h4 {
+    font-size: 1.25rem;
+  }
+
+  .story-body h5 {
+    font-size: 1.1rem;
+  }
+
+  .story-body h6 {
+    font-size: 1rem;
+  }
+
+  .story-body ul,
+  .story-body ol {
+    margin: 0 0 1.5rem;
+    padding-left: 1.4rem;
+  }
+
+  .story-body li {
+    margin: 0.35rem 0;
+  }
+
+  .story-body ul {
+    list-style: disc;
+  }
+
+  .story-body ol {
+    list-style: decimal;
+  }
+
+  .story-body blockquote {
+    margin: 0 0 1.5rem;
+    padding-left: 1rem;
+    border-left: 3px solid var(--color-terracotta);
+    color: var(--color-ink-soft);
+    font-style: italic;
+  }
+
+  .story-body a {
+    color: var(--color-ocean);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .story-body strong,
+  .story-body b {
+    font-weight: 600;
+  }
+
+  .rich-text-editor.ProseMirror {
+    min-height: 22rem;
+  }
+
+  .rich-text-editor.ProseMirror p {
+    margin: 0;
+  }
+
+  .rich-text-editor.ProseMirror h1,
+  .rich-text-editor.ProseMirror h2,
+  .rich-text-editor.ProseMirror h3,
+  .rich-text-editor.ProseMirror h4,
+  .rich-text-editor.ProseMirror h5,
+  .rich-text-editor.ProseMirror h6 {
+    font-weight: 600;
+    margin: 0;
+  }
+
+  .rich-text-editor.ProseMirror h1 {
+    font-size: 2rem;
+    line-height: 32px;
+  }
+
+  .rich-text-editor.ProseMirror h2 {
+    font-size: 1.65rem;
+    line-height: 32px;
+  }
+
+  .rich-text-editor.ProseMirror h3 {
+    font-size: 1.4rem;
+    line-height: 32px;
+  }
+
+  .rich-text-editor.ProseMirror h4 {
+    font-size: 1.2rem;
+    line-height: 32px;
+  }
+
+  .rich-text-editor.ProseMirror h5 {
+    font-size: 1.05rem;
+    line-height: 32px;
+  }
+
+  .rich-text-editor.ProseMirror h6 {
+    font-size: 0.95rem;
+    line-height: 32px;
+  }
+
+  .rich-text-editor.ProseMirror ul {
+    list-style: disc;
+    padding-left: 1.4rem;
+  }
+
+  .rich-text-editor.ProseMirror ol {
+    list-style: decimal;
+    padding-left: 1.4rem;
+  }
+
+  .rich-text-editor.ProseMirror blockquote {
+    border-left: 3px solid var(--color-terracotta);
+    padding-left: 0.85rem;
+    font-style: italic;
+  }
+
+  .rich-text-editor.ProseMirror a {
+    color: var(--color-ocean);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .rich-text-editor.ProseMirror p.is-editor-empty:first-child::before {
+    color: var(--color-ink-faint);
+    content: attr(data-placeholder);
+    float: left;
+    height: 0;
+    pointer-events: none;
+  }
+
   .ticket-notch {
     background:
       radial-gradient(circle at 0 50%, var(--color-paper) 14px, transparent 15px) left / 51% 100% no-repeat,

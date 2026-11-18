@@ -6,7 +6,8 @@ import { useDeletePost, usePost } from "../hooks/posts";
 import { useAuth } from "../context/AuthContext";
 import { errorMessage } from "../api/client";
 import { PHOTOGRAPHY_SLUG, categoryMeta } from "../lib/categories";
-import { displayName, formatDate, paragraphs, readingTime } from "../lib/format";
+import { displayName, formatDate, readingTime } from "../lib/format";
+import { ensureHtml, sanitizeHtml } from "../lib/html";
 import { StampBadge } from "../components/ui/StampBadge";
 import { Postmark } from "../components/ui/Postmark";
 import { Gallery } from "../components/posts/Gallery";
@@ -44,7 +45,7 @@ export default function PostDetail() {
   const meta = categoryMeta(post.category);
   const isPhoto = post.category === PHOTOGRAPHY_SLUG;
   const [cover, ...rest] = post.images;
-  const body = paragraphs(post.content);
+  const bodyHtml = sanitizeHtml(ensureHtml(post.content));
   const place = cover?.place_name?.trim() ?? "";
 
   async function onDelete() {
@@ -133,13 +134,10 @@ export default function PostDetail() {
 
       {isPhoto ? null : (
         <div className="mx-auto mt-14 max-w-2xl px-4 sm:px-6">
-          <div className="space-y-6 font-display text-[1.22rem] leading-[1.75] text-ink/90">
-            {body.map((p, i) => (
-              <p key={i} className={`whitespace-pre-line ${i === 0 ? "drop-cap" : ""}`}>
-                {p}
-              </p>
-            ))}
-          </div>
+          <div
+            className="story-body font-display text-[1.22rem] leading-[1.75] text-ink/90"
+            dangerouslySetInnerHTML={{ __html: bodyHtml }}
+          />
           <p className="mt-12 text-right font-hand text-3xl text-ocean">— {displayName(post.author)}</p>
         </div>
       )}

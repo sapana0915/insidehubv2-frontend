@@ -1,3 +1,5 @@
+import { stripHtml } from "./html";
+
 export function formatDate(iso: string, opts: Intl.DateTimeFormatOptions = { day: "numeric", month: "short", year: "numeric" }) {
   return new Date(iso).toLocaleDateString("en-GB", opts);
 }
@@ -12,12 +14,12 @@ export function postmarkDate(iso: string) {
 }
 
 export function excerpt(text: string, length = 160) {
-  const clean = text.replace(/\s+/g, " ").trim();
+  const clean = stripHtml(text);
   return clean.length > length ? `${clean.slice(0, length).trimEnd()}…` : clean;
 }
 
 export function readingTime(text: string) {
-  const words = text.trim().split(/\s+/).filter(Boolean).length;
+  const words = stripHtml(text).split(/\s+/).filter(Boolean).length;
   return Math.max(1, Math.round(words / 200));
 }
 
