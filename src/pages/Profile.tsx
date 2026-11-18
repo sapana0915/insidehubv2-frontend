@@ -4,6 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import { useProfile, useUpdateMe } from "../hooks/users";
 import { errorMessage } from "../api/client";
 import { PassportCard } from "../components/layout/PassportCard";
+import { JournalExport } from "../components/profile/JournalExport";
 import { PostGrid } from "../components/posts/PostGrid";
 import { EmptyState, Spinner } from "../components/ui/Decor";
 import { Button, ButtonLink } from "../components/ui/Button";
@@ -75,6 +76,8 @@ export default function Profile() {
               </ButtonLink>
             </div>
           )}
+
+          <JournalExport username={user.username} postCount={profile.data?.post_count} />
         </div>
 
         <section>
