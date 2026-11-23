@@ -78,9 +78,11 @@ export function Masthead() {
                 >
                   Orgs
                 </Link>
-                <ButtonLink to={newEntryPath} size="sm" icon={<PenLine className="h-3.5 w-3.5" />}>
-                  Write
-                </ButtonLink>
+                {!user?.is_admin ? (
+                  <ButtonLink to={newEntryPath} size="sm" icon={<PenLine className="h-3.5 w-3.5" />}>
+                    Write
+                  </ButtonLink>
+                ) : null}
                 <Link
                   to="/me"
                   className="flex h-9 w-9 items-center justify-center rounded-full border-2 border-ink bg-mustard font-display font-semibold text-ink"
@@ -125,12 +127,19 @@ export function Masthead() {
             <hr className="border-ink/10" />
             {isAuthenticated ? (
               <>
-                <Link to={newEntryPath} className="eyebrow text-terracotta" onClick={() => setOpen(false)}>
-                  Write a new entry
-                </Link>
+                {!user?.is_admin ? (
+                  <Link to={newEntryPath} className="eyebrow text-terracotta" onClick={() => setOpen(false)}>
+                    Write a new entry
+                  </Link>
+                ) : null}
                 <Link to="/organizations" className="eyebrow" onClick={() => setOpen(false)}>
                   Organizations
                 </Link>
+                {user?.is_admin ? (
+                  <Link to="/organizations/new" className="eyebrow text-terracotta" onClick={() => setOpen(false)}>
+                    Create organization
+                  </Link>
+                ) : null}
                 <Link to="/me" className="eyebrow" onClick={() => setOpen(false)}>
                   Your journal
                 </Link>

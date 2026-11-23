@@ -12,7 +12,8 @@ import { StampBadge } from "../components/ui/StampBadge";
 export default function Explore() {
   const { slug } = useParams();
   const [params, setParams] = useSearchParams();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
+  const isAdmin = Boolean(user?.is_admin);
   const [query, setQuery] = useState(params.get("q") ?? "");
   const search = params.get("q") ?? "";
 
@@ -84,15 +85,21 @@ export default function Explore() {
               <EmptyState
                 title={search ? `Nothing matches “${search}”.` : meta ? `No ${meta.name.toLowerCase()} entries yet.` : "The journal is empty."}
                 action={
-                  <ButtonLink
-                    to={slug ? `/new?category=${encodeURIComponent(slug)}` : "/new"}
-                    size="sm"
-                  >
-                    Write one
-                  </ButtonLink>
+                  isAdmin ? undefined : (
+                    <ButtonLink
+                      to={slug ? `/new?category=${encodeURIComponent(slug)}` : "/new"}
+                      size="sm"
+                    >
+                      Write one
+                    </ButtonLink>
+                  )
                 }
               >
-                {search ? "Try a different word, or browse another drawer." : "Every journal starts with a single page."}
+                {search
+                  ? "Try a different word, or browse another drawer."
+                  : isAdmin
+                    ? "When organizations publish entries, they will appear here for you to review."
+                    : "Every journal starts with a single page."}
               </EmptyState>
             }
           />

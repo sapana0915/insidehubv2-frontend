@@ -175,6 +175,26 @@ export interface Organization {
   updated_at: string;
 }
 
+export interface OrganizationAdmin {
+  id: string;
+  name: string;
+  slug: string;
+  created_by_id: string;
+  member_count: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface OrganizationMember {
+  id: string;
+  email: string;
+  username: string;
+  full_name: string | null;
+  org_role: string | null;
+  is_active: boolean;
+  created_at: string;
+}
+
 export interface OrganizationCreateInput {
   name: string;
   slug?: string;

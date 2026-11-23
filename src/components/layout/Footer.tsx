@@ -1,8 +1,12 @@
 import { Link } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 import { CATEGORIES } from "../../lib/categories";
 import { TornDivider } from "../ui/Decor";
 
 export function Footer() {
+  const { user } = useAuth();
+  const isAdmin = Boolean(user?.is_admin);
+
   return (
     <footer className="mt-24">
       <TornDivider />
@@ -38,11 +42,19 @@ export function Footer() {
                   Explore
                 </Link>
               </li>
-              <li>
-                <Link to="/new" className="hover:text-terracotta">
-                  Write an entry
-                </Link>
-              </li>
+              {!isAdmin ? (
+                <li>
+                  <Link to="/new" className="hover:text-terracotta">
+                    Write an entry
+                  </Link>
+                </li>
+              ) : (
+                <li>
+                  <Link to="/organizations/new" className="hover:text-terracotta">
+                    Create organization
+                  </Link>
+                </li>
+              )}
               <li>
                 <Link to="/me" className="hover:text-terracotta">
                   Your journal

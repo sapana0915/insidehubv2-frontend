@@ -45,7 +45,7 @@ export default function PostDetail() {
     );
   }
 
-  const isOwner = Boolean(user && (user.id === post.author_id || user.is_admin));
+  const isOwner = Boolean(user && user.id === post.author_id);
   const meta = categoryMeta(post.category);
   const isPhoto = post.category === PHOTOGRAPHY_SLUG;
   const [cover, ...rest] = post.images;

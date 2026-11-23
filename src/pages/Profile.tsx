@@ -75,9 +75,15 @@ export default function Profile() {
               <Button variant="ghost" size="sm" onClick={startEditing}>
                 Edit passport
               </Button>
-              <ButtonLink to="/new" size="sm" icon={<PenLine className="h-3.5 w-3.5" />}>
-                New entry
-              </ButtonLink>
+              {!user.is_admin ? (
+                <ButtonLink to="/new" size="sm" icon={<PenLine className="h-3.5 w-3.5" />}>
+                  New entry
+                </ButtonLink>
+              ) : (
+                <ButtonLink to="/explore" size="sm">
+                  Review posts
+                </ButtonLink>
+              )}
             </div>
           )}
 
@@ -101,9 +107,14 @@ export default function Profile() {
             ) : user.is_admin ? (
               <div className="mt-3">
                 <p className="text-sm text-ink-soft">You manage the platform.</p>
-                <ButtonLink to="/organizations" size="sm" className="mt-4">
-                  Provision a workspace
-                </ButtonLink>
+                <div className="mt-4 flex flex-wrap gap-3">
+                  <ButtonLink to="/organizations" size="sm">
+                    Workspace directory
+                  </ButtonLink>
+                  <ButtonLink to="/organizations/new" size="sm" variant="ghost">
+                    Create organization
+                  </ButtonLink>
+                </div>
               </div>
             ) : (
               <p className="mt-3 text-sm text-ink-soft">Not assigned to an organization yet.</p>
@@ -114,17 +125,28 @@ export default function Profile() {
         </div>
 
         <section>
-          <p className="eyebrow">Your journal</p>
-          <h1 className="mt-2 font-display text-4xl font-semibold tracking-tight md:text-5xl">Entries you've posted</h1>
+          <p className="eyebrow">{user.is_admin ? "Monitoring" : "Your journal"}</p>
+          <h1 className="mt-2 font-display text-4xl font-semibold tracking-tight md:text-5xl">
+            {user.is_admin ? "Review the field journal" : "Entries you've posted"}
+          </h1>
           <div className="mt-8">
-            <PostGrid
-              filters={{ author_id: user.id }}
-              empty={
-                <EmptyState title="Your journal is waiting." action={<ButtonLink to="/new">Write your first entry</ButtonLink>}>
-                  Share a trip, a photo set or a thought — it'll appear here and in the public feed.
-                </EmptyState>
-              }
-            />
+            {user.is_admin ? (
+              <EmptyState
+                title="Open Explore to review posts."
+                action={<ButtonLink to="/explore">Go to Explore</ButtonLink>}
+              >
+                Platform admins monitor every organization&apos;s entries. Click a postcard to open it.
+              </EmptyState>
+            ) : (
+              <PostGrid
+                filters={{ author_id: user.id }}
+                empty={
+                  <EmptyState title="Your journal is waiting." action={<ButtonLink to="/new">Write your first entry</ButtonLink>}>
+                    Share a trip, a photo set or a thought — it'll appear here and in the public feed.
+                  </EmptyState>
+                }
+              />
+            )}
           </div>
         </section>
       </div>

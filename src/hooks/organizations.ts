@@ -10,6 +10,22 @@ export function useMyOrganizations(enabled = true) {
   });
 }
 
+export function useAdminOrganizations(enabled = false) {
+  return useQuery({
+    queryKey: ["organizations", "admin"],
+    queryFn: orgsApi.listAll,
+    enabled,
+  });
+}
+
+export function useOrganizationMembers(organizationId: string | null, enabled = false) {
+  return useQuery({
+    queryKey: ["organizations", "members", organizationId],
+    queryFn: () => orgsApi.listMembers(organizationId!),
+    enabled: enabled && Boolean(organizationId),
+  });
+}
+
 export function useCreateOrganization() {
   const qc = useQueryClient();
   return useMutation({
