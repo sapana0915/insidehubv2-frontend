@@ -1,15 +1,17 @@
 import { api } from "./client";
-import type { RegisterInput, SendCodeResult, Token } from "../types";
+import type { RegisterInput, Token } from "../types";
+// import type { SendCodeResult } from "../types";  // OTP disabled for now
 
 export async function login(email: string, password: string): Promise<Token> {
   const { data } = await api.post<Token>("/users/login", { email, password });
   return data;
 }
 
-export async function sendSignupCode(email: string, username: string): Promise<SendCodeResult> {
-  const { data } = await api.post<SendCodeResult>("/users/register/send-code", { email, username });
-  return data;
-}
+// OTP disabled for now — uncomment when email verification is required again:
+// export async function sendSignupCode(email: string, username: string): Promise<SendCodeResult> {
+//   const { data } = await api.post<SendCodeResult>("/users/register/send-code", { email, username });
+//   return data;
+// }
 
 export async function register(input: RegisterInput): Promise<Token> {
   const { data } = await api.post<Token>("/users/register", input);

@@ -1,22 +1,26 @@
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import * as postsApi from "../api/posts";
+import { useAuth } from "../context/AuthContext";
 import type { PostFilters, PostInput } from "../types";
 
 export function usePostsFeed(filters: PostFilters, pageSize = postsApi.PAGE_SIZE) {
+  const { isAuthenticated } = useAuth();
   return useInfiniteQuery({
     queryKey: ["posts", "feed", filters, pageSize],
     queryFn: ({ pageParam }) => postsApi.listPosts(filters, pageParam, pageSize),
     initialPageParam: 0,
+    enabled: isAuthenticated,
     getNextPageParam: (lastPage, pages) =>
       lastPage.length < pageSize ? undefined : pages.length * pageSize,
   });
 }
 
 export function usePost(id: string | undefined) {
+  const { isAuthenticated } = useAuth();
   return useQuery({
     queryKey: ["posts", "detail", id],
     queryFn: () => postsApi.getPost(id!),
-    enabled: Boolean(id),
+    enabled: Boolean(id) && isAuthenticated,
   });
 }
 

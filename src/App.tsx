@@ -12,6 +12,8 @@ const Explore = lazy(() => import("./pages/Explore"));
 const PostDetail = lazy(() => import("./pages/PostDetail"));
 const PostEditor = lazy(() => import("./pages/PostEditor"));
 const Profile = lazy(() => import("./pages/Profile"));
+const Organizations = lazy(() => import("./pages/Organizations"));
+const CreateOrganization = lazy(() => import("./pages/CreateOrganization"));
 const Author = lazy(() => import("./pages/Author"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
@@ -54,6 +56,22 @@ export default function App() {
           element={
             <ProtectedRoute>
               <Profile />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="organizations"
+          element={
+            <ProtectedRoute>
+              <Organizations />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="organizations/new"
+          element={
+            <ProtectedRoute>
+              <CreateOrganization />
             </ProtectedRoute>
           }
         />

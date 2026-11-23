@@ -12,7 +12,8 @@ import { StampBadge } from "../components/ui/StampBadge";
 export default function Explore() {
   const { slug } = useParams();
   const [params, setParams] = useSearchParams();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
+  const isAdmin = Boolean(user?.is_admin);
   const [query, setQuery] = useState(params.get("q") ?? "");
   const search = params.get("q") ?? "";
 
@@ -66,30 +67,43 @@ export default function Explore() {
       </div>
 
       <section className="mt-10">
-        <PostGrid
-          filters={filters}
-          empty={
-            <EmptyState
-              title={search ? `Nothing matches “${search}”.` : meta ? `No ${meta.name.toLowerCase()} entries yet.` : "The journal is empty."}
-              action={
-                <ButtonLink
-                  to={
-                    isAuthenticated
-                      ? slug
-                        ? `/new?category=${encodeURIComponent(slug)}`
-                        : "/new"
-                      : "/register"
-                  }
-                  size="sm"
-                >
-                  Write one
-                </ButtonLink>
-              }
-            >
-              {search ? "Try a different word, or browse another drawer." : "Every journal starts with a single page."}
-            </EmptyState>
-          }
-        />
+        {!isAuthenticated ? (
+          <EmptyState
+            title="Sign in to open your organization's journal."
+            action={
+              <ButtonLink to={`/login?next=${encodeURIComponent(slug ? `/c/${slug}` : "/explore")}`} size="sm">
+                Sign in
+              </ButtonLink>
+            }
+          >
+            Each organization only sees its own posts — show your passport to continue.
+          </EmptyState>
+        ) : (
+          <PostGrid
+            filters={filters}
+            empty={
+              <EmptyState
+                title={search ? `Nothing matches “${search}”.` : meta ? `No ${meta.name.toLowerCase()} entries yet.` : "The journal is empty."}
+                action={
+                  isAdmin ? undefined : (
+                    <ButtonLink
+                      to={slug ? `/new?category=${encodeURIComponent(slug)}` : "/new"}
+                      size="sm"
+                    >
+                      Write one
+                    </ButtonLink>
+                  )
+                }
+              >
+                {search
+                  ? "Try a different word, or browse another drawer."
+                  : isAdmin
+                    ? "When organizations publish entries, they will appear here for you to review."
+                    : "Every journal starts with a single page."}
+              </EmptyState>
+            }
+          />
+        )}
       </section>
     </div>
   );

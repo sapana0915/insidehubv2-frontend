@@ -48,6 +48,9 @@ export default function PostEditor() {
     }
   }, [isEdit, existing.data, hydrated]);
 
+  if (user?.is_admin) {
+    return <Navigate to={isEdit && id ? `/p/${id}` : "/explore"} replace />;
+  }
   if (isEdit && existing.isPending) return <Spinner />;
   if (isEdit && existing.isError) {
     return (
@@ -56,7 +59,7 @@ export default function PostEditor() {
       </div>
     );
   }
-  if (isEdit && existing.data && user && existing.data.author_id !== user.id && !user.is_admin) {
+  if (isEdit && existing.data && user && existing.data.author_id !== user.id) {
     return <Navigate to={`/p/${id}`} replace />;
   }
 

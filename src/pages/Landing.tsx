@@ -65,7 +65,8 @@ function HeroCollage() {
 }
 
 export default function Landing() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
+  const isAdmin = Boolean(user?.is_admin);
 
   return (
     <>
@@ -83,14 +84,20 @@ export default function Landing() {
             <ButtonLink to="/explore" size="lg" icon={<ArrowRight className="h-4 w-4" />}>
               Open the journal
             </ButtonLink>
-            <ButtonLink
-              to={isAuthenticated ? "/new" : "/register"}
-              size="lg"
-              variant="ghost"
-              icon={<PenLine className="h-4 w-4" />}
-            >
-              {isAuthenticated ? "Write an entry" : "Start writing"}
-            </ButtonLink>
+            {isAdmin ? (
+              <ButtonLink to="/organizations" size="lg" variant="ghost">
+                Manage organizations
+              </ButtonLink>
+            ) : (
+              <ButtonLink
+                to={isAuthenticated ? "/new" : "/register"}
+                size="lg"
+                variant="ghost"
+                icon={<PenLine className="h-4 w-4" />}
+              >
+                {isAuthenticated ? "Write an entry" : "Start writing"}
+              </ButtonLink>
+            )}
           </div>
           <p className="mt-10 font-hand text-2xl text-ocean">— no algorithms, just postcards.</p>
         </div>
@@ -144,20 +151,37 @@ export default function Landing() {
             See all <ArrowRight className="h-3 w-3" />
           </Link>
         </div>
-        <PostGrid
-          filters={{}}
-          pageSize={6}
-          paginate={false}
-          empty={
-            <div className="mx-auto max-w-lg border-2 border-dashed border-ink/20 bg-card/60 px-8 py-14 text-center">
-              <p className="font-hand text-3xl text-terracotta">the first page is blank…</p>
-              <p className="mt-2 font-display text-2xl font-semibold">Be the first to write in the journal.</p>
-              <div className="mt-6 flex justify-center">
-                <ButtonLink to={isAuthenticated ? "/new" : "/register"}>Write the first entry</ButtonLink>
-              </div>
+        {!isAuthenticated ? (
+          <div className="mx-auto max-w-lg border-2 border-dashed border-ink/20 bg-card/60 px-8 py-14 text-center">
+            <p className="font-hand text-3xl text-terracotta">members only postcards…</p>
+            <p className="mt-2 font-display text-2xl font-semibold">Sign in to see your organization's journal.</p>
+            <div className="mt-6 flex justify-center gap-3">
+              <ButtonLink to="/login?next=/explore">Sign in</ButtonLink>
+              <ButtonLink to="/register" variant="ghost">
+                Get your passport
+              </ButtonLink>
             </div>
-          }
-        />
+          </div>
+        ) : (
+          <PostGrid
+            filters={{}}
+            pageSize={6}
+            paginate={false}
+            empty={
+              <div className="mx-auto max-w-lg border-2 border-dashed border-ink/20 bg-card/60 px-8 py-14 text-center">
+                <p className="font-hand text-3xl text-terracotta">the first page is blank…</p>
+                <p className="mt-2 font-display text-2xl font-semibold">
+                  {isAdmin ? "No entries to review yet." : "Be the first to write in the journal."}
+                </p>
+                {!isAdmin ? (
+                  <div className="mt-6 flex justify-center">
+                    <ButtonLink to="/new">Write the first entry</ButtonLink>
+                  </div>
+                ) : null}
+              </div>
+            }
+          />
+        )}
       </section>
     </>
   );

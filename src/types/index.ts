@@ -36,6 +36,7 @@ export interface Post {
   content: string;
   category: string;
   author_id: string;
+  organization_id: string;
   author: PostAuthor | null;
   images: PostImage[];
   created_at: string;
@@ -108,7 +109,8 @@ export interface RegisterInput {
   username: string;
   full_name?: string;
   password: string;
-  code: string;
+  // OTP disabled for now — uncomment when email verification is required again:
+  // code: string;
 }
 
 export interface SendCodeResult {
@@ -160,4 +162,44 @@ export interface UserUpdateInput {
   full_name?: string;
   email?: string;
   password?: string;
+}
+
+export interface Organization {
+  id: string;
+  name: string;
+  slug: string;
+  created_by_id: string;
+  role: string | null;
+  owner_email: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface OrganizationAdmin {
+  id: string;
+  name: string;
+  slug: string;
+  created_by_id: string;
+  member_count: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface OrganizationMember {
+  id: string;
+  email: string;
+  username: string;
+  full_name: string | null;
+  org_role: string | null;
+  is_active: boolean;
+  created_at: string;
+}
+
+export interface OrganizationCreateInput {
+  name: string;
+  slug?: string;
+  owner_email: string;
+  owner_username: string;
+  owner_password: string;
+  owner_full_name?: string;
 }

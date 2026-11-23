@@ -21,3 +21,9 @@ export function useUpdateMe() {
     },
   });
 }
+
+export function useExportMyWork() {
+  return useMutation({
+    mutationFn: (username: string) => usersApi.exportMyWork(username),
+  });
+}
