@@ -66,30 +66,37 @@ export default function Explore() {
       </div>
 
       <section className="mt-10">
-        <PostGrid
-          filters={filters}
-          empty={
-            <EmptyState
-              title={search ? `Nothing matches “${search}”.` : meta ? `No ${meta.name.toLowerCase()} entries yet.` : "The journal is empty."}
-              action={
-                <ButtonLink
-                  to={
-                    isAuthenticated
-                      ? slug
-                        ? `/new?category=${encodeURIComponent(slug)}`
-                        : "/new"
-                      : "/register"
-                  }
-                  size="sm"
-                >
-                  Write one
-                </ButtonLink>
-              }
-            >
-              {search ? "Try a different word, or browse another drawer." : "Every journal starts with a single page."}
-            </EmptyState>
-          }
-        />
+        {!isAuthenticated ? (
+          <EmptyState
+            title="Sign in to open your organization's journal."
+            action={
+              <ButtonLink to={`/login?next=${encodeURIComponent(slug ? `/c/${slug}` : "/explore")}`} size="sm">
+                Sign in
+              </ButtonLink>
+            }
+          >
+            Each organization only sees its own posts — show your passport to continue.
+          </EmptyState>
+        ) : (
+          <PostGrid
+            filters={filters}
+            empty={
+              <EmptyState
+                title={search ? `Nothing matches “${search}”.` : meta ? `No ${meta.name.toLowerCase()} entries yet.` : "The journal is empty."}
+                action={
+                  <ButtonLink
+                    to={slug ? `/new?category=${encodeURIComponent(slug)}` : "/new"}
+                    size="sm"
+                  >
+                    Write one
+                  </ButtonLink>
+                }
+              >
+                {search ? "Try a different word, or browse another drawer." : "Every journal starts with a single page."}
+              </EmptyState>
+            }
+          />
+        )}
       </section>
     </div>
   );

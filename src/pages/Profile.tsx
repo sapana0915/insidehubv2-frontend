@@ -1,7 +1,8 @@
 import { useState, type FormEvent } from "react";
-import { PenLine } from "lucide-react";
+import { Building2, PenLine } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useProfile, useUpdateMe } from "../hooks/users";
+import { useMyOrganizations } from "../hooks/organizations";
 import { errorMessage } from "../api/client";
 import { PassportCard } from "../components/layout/PassportCard";
 import { JournalExport } from "../components/profile/JournalExport";
@@ -13,11 +14,14 @@ import { Input, FormError } from "../components/ui/Field";
 export default function Profile() {
   const { user } = useAuth();
   const profile = useProfile(user?.id);
+  const myOrgs = useMyOrganizations(Boolean(user));
   const updateMe = useUpdateMe();
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState({ full_name: "", username: "" });
 
   if (!user) return <Spinner />;
+
+  const myOrg = myOrgs.data?.[0] ?? null;
 
   function startEditing() {
     setForm({ full_name: user!.full_name ?? "", username: user!.username });
@@ -76,6 +80,35 @@ export default function Profile() {
               </ButtonLink>
             </div>
           )}
+
+          <div className="bg-card p-5 shadow-[var(--shadow-postcard)]">
+            <div className="flex items-center gap-2">
+              <Building2 className="h-4 w-4 text-ocean" />
+              <span className="eyebrow">Organization</span>
+            </div>
+            {myOrgs.isPending ? (
+              <p className="mt-3 text-sm text-ink-faint">Loading…</p>
+            ) : myOrg ? (
+              <div className="mt-3">
+                <p className="font-display text-xl font-semibold">{myOrg.name}</p>
+                <p className="mt-1 font-mono text-xs uppercase tracking-wider text-ink-soft">
+                  {myOrg.role ?? "member"}
+                </p>
+                <ButtonLink to="/organizations" size="sm" variant="ghost" className="mt-4">
+                  View organization
+                </ButtonLink>
+              </div>
+            ) : user.is_admin ? (
+              <div className="mt-3">
+                <p className="text-sm text-ink-soft">You manage the platform.</p>
+                <ButtonLink to="/organizations" size="sm" className="mt-4">
+                  Provision a workspace
+                </ButtonLink>
+              </div>
+            ) : (
+              <p className="mt-3 text-sm text-ink-soft">Not assigned to an organization yet.</p>
+            )}
+          </div>
 
           <JournalExport username={user.username} postCount={profile.data?.post_count} />
         </div>

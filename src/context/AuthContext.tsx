@@ -12,7 +12,7 @@ interface AuthState {
   isLoading: boolean;
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<void>;
-  sendSignupCode: (email: string, username: string) => Promise<number>;
+  // sendSignupCode: (email: string, username: string) => Promise<number>;  // OTP disabled for now
   register: (input: RegisterInput) => Promise<void>;
   logout: () => void;
 }
@@ -72,10 +72,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setToken(access_token);
   }, []);
 
-  const sendSignupCode = useCallback(async (email: string, username: string) => {
-    const result = await authApi.sendSignupCode(email, username);
-    return result.resend_in;
-  }, []);
+  // OTP disabled for now — uncomment when email verification is required again:
+  // const sendSignupCode = useCallback(async (email: string, username: string) => {
+  //   const result = await authApi.sendSignupCode(email, username);
+  //   return result.resend_in;
+  // }, []);
 
   const register = useCallback(async (input: RegisterInput) => {
     const { access_token } = await authApi.register(input);
@@ -90,11 +91,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isLoading: Boolean(token) && meQuery.isPending,
       isAuthenticated: Boolean(token),
       login,
-      sendSignupCode,
+      // sendSignupCode,
       register,
       logout,
     }),
-    [token, meQuery.data, meQuery.isPending, login, sendSignupCode, register, logout],
+    [token, meQuery.data, meQuery.isPending, login, register, logout],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

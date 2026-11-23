@@ -144,20 +144,33 @@ export default function Landing() {
             See all <ArrowRight className="h-3 w-3" />
           </Link>
         </div>
-        <PostGrid
-          filters={{}}
-          pageSize={6}
-          paginate={false}
-          empty={
-            <div className="mx-auto max-w-lg border-2 border-dashed border-ink/20 bg-card/60 px-8 py-14 text-center">
-              <p className="font-hand text-3xl text-terracotta">the first page is blank…</p>
-              <p className="mt-2 font-display text-2xl font-semibold">Be the first to write in the journal.</p>
-              <div className="mt-6 flex justify-center">
-                <ButtonLink to={isAuthenticated ? "/new" : "/register"}>Write the first entry</ButtonLink>
-              </div>
+        {!isAuthenticated ? (
+          <div className="mx-auto max-w-lg border-2 border-dashed border-ink/20 bg-card/60 px-8 py-14 text-center">
+            <p className="font-hand text-3xl text-terracotta">members only postcards…</p>
+            <p className="mt-2 font-display text-2xl font-semibold">Sign in to see your organization's journal.</p>
+            <div className="mt-6 flex justify-center gap-3">
+              <ButtonLink to="/login?next=/explore">Sign in</ButtonLink>
+              <ButtonLink to="/register" variant="ghost">
+                Get your passport
+              </ButtonLink>
             </div>
-          }
-        />
+          </div>
+        ) : (
+          <PostGrid
+            filters={{}}
+            pageSize={6}
+            paginate={false}
+            empty={
+              <div className="mx-auto max-w-lg border-2 border-dashed border-ink/20 bg-card/60 px-8 py-14 text-center">
+                <p className="font-hand text-3xl text-terracotta">the first page is blank…</p>
+                <p className="mt-2 font-display text-2xl font-semibold">Be the first to write in the journal.</p>
+                <div className="mt-6 flex justify-center">
+                  <ButtonLink to="/new">Write the first entry</ButtonLink>
+                </div>
+              </div>
+            }
+          />
+        )}
       </section>
     </>
   );

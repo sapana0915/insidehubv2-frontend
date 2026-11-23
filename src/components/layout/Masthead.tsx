@@ -71,6 +71,13 @@ export function Masthead() {
           <div className="hidden shrink-0 items-center gap-3 md:flex">
             {isAuthenticated ? (
               <>
+                <Link
+                  to="/organizations"
+                  className="eyebrow hover:text-terracotta"
+                  title="Organizations"
+                >
+                  Orgs
+                </Link>
                 <ButtonLink to={newEntryPath} size="sm" icon={<PenLine className="h-3.5 w-3.5" />}>
                   Write
                 </ButtonLink>
@@ -120,6 +127,9 @@ export function Masthead() {
               <>
                 <Link to={newEntryPath} className="eyebrow text-terracotta" onClick={() => setOpen(false)}>
                   Write a new entry
+                </Link>
+                <Link to="/organizations" className="eyebrow" onClick={() => setOpen(false)}>
+                  Organizations
                 </Link>
                 <Link to="/me" className="eyebrow" onClick={() => setOpen(false)}>
                   Your journal

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, Navigate, useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Pencil, Trash2 } from "lucide-react";
 import axios from "axios";
 import { useDeletePost, usePost } from "../hooks/posts";
@@ -21,11 +21,15 @@ import { LikeButton } from "../components/likes/LikeButton";
 export default function PostDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const { data: post, isPending, error } = usePost(id);
   const deletePost = useDeletePost();
   const [confirming, setConfirming] = useState(false);
 
+  if (authLoading) return <Spinner />;
+  if (!isAuthenticated) {
+    return <Navigate to={`/login?next=${encodeURIComponent(`/p/${id ?? ""}`)}`} replace />;
+  }
   if (isPending) return <Spinner />;
   if (error || !post) {
     const notFound = axios.isAxiosError(error) && (error.response?.status === 404 || error.response?.status === 422);
@@ -35,7 +39,7 @@ export default function PostDetail() {
           title={notFound ? "This postcard got lost in the mail." : "We couldn't open this entry."}
           action={<ButtonLink to="/explore">Back to the journal</ButtonLink>}
         >
-          {notFound ? "It may have been deleted, or the link is wrong." : errorMessage(error)}
+          {notFound ? "It may have been deleted, or it belongs to another organization." : errorMessage(error)}
         </EmptyState>
       </div>
     );
