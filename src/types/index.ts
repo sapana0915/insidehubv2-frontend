@@ -5,6 +5,8 @@ export interface User {
   full_name: string | null;
   is_active: boolean;
   is_admin: boolean;
+  organization_id: string | null;
+  org_role: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -168,6 +170,12 @@ export interface Organization {
   id: string;
   name: string;
   slug: string;
+  description: string | null;
+  industry: string | null;
+  target_audience: string | null;
+  website_url: string | null;
+  brand_keywords: string | null;
+  email_domain: string | null;
   created_by_id: string;
   role: string | null;
   owner_email: string | null;
@@ -179,6 +187,12 @@ export interface OrganizationAdmin {
   id: string;
   name: string;
   slug: string;
+  description: string | null;
+  industry: string | null;
+  target_audience: string | null;
+  website_url: string | null;
+  brand_keywords: string | null;
+  email_domain: string | null;
   created_by_id: string;
   member_count: number;
   created_at: string;
@@ -198,6 +212,12 @@ export interface OrganizationMember {
 export interface OrganizationCreateInput {
   name: string;
   slug?: string;
+  description?: string;
+  industry?: string;
+  target_audience?: string;
+  website_url?: string;
+  brand_keywords?: string;
+  email_domain?: string;
   owner_email: string;
   owner_username: string;
   owner_password: string;

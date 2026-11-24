@@ -127,7 +127,7 @@ export default function Register() {
       from="HERE"
       to="EVERYWHERE"
       title="Issue your passport."
-      subtitle="One account to post stories, photos and field notes."
+      subtitle="Use your company email. You’ll join that organization’s workspace automatically."
       footer={
         <>
           Already have one?{" "}
@@ -143,7 +143,17 @@ export default function Register() {
         </div>
         <Input label="Full name" name="full_name" autoComplete="name" value={form.full_name} onChange={update("full_name")} placeholder="Optional" />
         <Input label="Username" name="username" autoComplete="username" required value={form.username} onChange={update("username")} />
-        <Input label="Email" name="email" type="email" autoComplete="email" required value={form.email} onChange={update("email")} className="sm:col-span-2" />
+        <Input
+          label="Work email"
+          name="email"
+          type="email"
+          autoComplete="email"
+          required
+          value={form.email}
+          onChange={update("email")}
+          className="sm:col-span-2"
+          hint="Must match your organization’s email domain (for example you@acme.com)."
+        />
         <PasswordInput
           label="Password"
           name="password"

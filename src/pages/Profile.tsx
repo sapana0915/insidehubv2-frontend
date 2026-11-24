@@ -2,7 +2,7 @@ import { useState, type FormEvent } from "react";
 import { Building2, PenLine } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useProfile, useUpdateMe } from "../hooks/users";
-import { useMyOrganizations } from "../hooks/organizations";
+import { useJoinOrganization, useMyOrganizations } from "../hooks/organizations";
 import { errorMessage } from "../api/client";
 import { PassportCard } from "../components/layout/PassportCard";
 import { JournalExport } from "../components/profile/JournalExport";
@@ -15,6 +15,7 @@ export default function Profile() {
   const { user } = useAuth();
   const profile = useProfile(user?.id);
   const myOrgs = useMyOrganizations(Boolean(user));
+  const joinOrg = useJoinOrganization();
   const updateMe = useUpdateMe();
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState({ full_name: "", username: "" });
@@ -117,7 +118,18 @@ export default function Profile() {
                 </div>
               </div>
             ) : (
-              <p className="mt-3 text-sm text-ink-soft">Not assigned to an organization yet.</p>
+              <div className="mt-3 space-y-3">
+                <p className="text-sm text-ink-soft">
+                  Not assigned yet. If your admin set up a workspace for your email domain, you can join
+                  now.
+                </p>
+                {joinOrg.isError ? (
+                  <p className="text-sm text-terracotta-deep">{errorMessage(joinOrg.error)}</p>
+                ) : null}
+                <Button type="button" size="sm" loading={joinOrg.isPending} onClick={() => joinOrg.mutate()}>
+                  Join with my email domain
+                </Button>
+              </div>
             )}
           </div>
 
