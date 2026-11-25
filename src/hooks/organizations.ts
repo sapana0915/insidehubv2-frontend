@@ -26,6 +26,17 @@ export function useOrganizationMembers(organizationId: string | null, enabled = 
   });
 }
 
+export function useJoinOrganization() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: () => orgsApi.joinOrganization(),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["organizations"] });
+      qc.invalidateQueries({ queryKey: ["me"] });
+    },
+  });
+}
+
 export function useCreateOrganization() {
   const qc = useQueryClient();
   return useMutation({

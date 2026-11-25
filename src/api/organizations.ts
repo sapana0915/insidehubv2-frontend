@@ -21,6 +21,11 @@ export async function listMembers(organizationId: string): Promise<OrganizationM
   return data;
 }
 
+export async function joinOrganization(): Promise<Organization> {
+  const { data } = await api.post<Organization>("/organizations/join");
+  return data;
+}
+
 export async function createOrganization(input: OrganizationCreateInput): Promise<Organization> {
   const { data } = await api.post<Organization>("/organizations/", input);
   return data;

@@ -15,14 +15,23 @@ export default function CreateOrganization() {
   const [form, setForm] = useState({
     name: "",
     slug: "",
+    email_domain: "",
+    description: "",
+    industry: "",
+    target_audience: "",
+    website_url: "",
+    brand_keywords: "",
     owner_email: "",
     owner_username: "",
     owner_password: "",
     owner_full_name: "",
   });
-  const [created, setCreated] = useState<{ id: string; name: string; owner_email: string | null } | null>(
-    null,
-  );
+  const [created, setCreated] = useState<{
+    id: string;
+    name: string;
+    owner_email: string | null;
+    email_domain: string | null;
+  } | null>(null);
 
   if (authLoading) return <Spinner label="Checking your passport…" />;
   if (!user) return <Navigate to="/login?next=/organizations/new" replace />;
@@ -34,12 +43,23 @@ export default function CreateOrganization() {
       const org = await createOrg.mutateAsync({
         name: form.name.trim(),
         slug: form.slug.trim() || undefined,
+        email_domain: form.email_domain.trim() || undefined,
+        description: form.description.trim() || undefined,
+        industry: form.industry.trim() || undefined,
+        target_audience: form.target_audience.trim() || undefined,
+        website_url: form.website_url.trim() || undefined,
+        brand_keywords: form.brand_keywords.trim() || undefined,
         owner_email: form.owner_email.trim(),
         owner_username: form.owner_username.trim(),
         owner_password: form.owner_password,
         owner_full_name: form.owner_full_name.trim() || undefined,
       });
-      setCreated({ id: org.id, name: org.name, owner_email: org.owner_email });
+      setCreated({
+        id: org.id,
+        name: org.name,
+        owner_email: org.owner_email,
+        email_domain: org.email_domain,
+      });
     } catch {
       // surfaced via createOrg.error
     }
@@ -54,7 +74,8 @@ export default function CreateOrganization() {
       <p className="mt-6 eyebrow">Admin desk</p>
       <h1 className="mt-2 font-display text-4xl font-semibold tracking-tight">Create organization</h1>
       <p className="mt-3 text-ink-soft">
-        One form opens a workspace and creates its first owner account.
+        Open a workspace, set the company email domain, and create the first owner. Anyone who
+        later registers with that domain joins as a member automatically.
       </p>
 
       {created ? (
@@ -66,6 +87,12 @@ export default function CreateOrganization() {
               <p className="mt-1 text-ink-soft">
                 Owner login: <span className="font-mono text-ink">{created.owner_email}</span>
               </p>
+              {created.email_domain ? (
+                <p className="mt-1 text-ink-soft">
+                  Members can join with{" "}
+                  <span className="font-mono text-ink">@{created.email_domain}</span> emails.
+                </p>
+              ) : null}
             </div>
           </div>
           <div className="flex flex-wrap gap-3">
@@ -97,6 +124,47 @@ export default function CreateOrganization() {
             hint="Optional. Letters, numbers, hyphens. Auto-built from the name if empty."
             value={form.slug}
             onChange={(e) => setForm((f) => ({ ...f, slug: e.target.value }))}
+          />
+          <Input
+            label="Email domain"
+            name="email_domain"
+            required
+            placeholder="acme.com"
+            hint="Employees registering with this domain join automatically. No @ prefix."
+            value={form.email_domain}
+            onChange={(e) => setForm((f) => ({ ...f, email_domain: e.target.value }))}
+          />
+          <Input
+            label="Description"
+            name="description"
+            value={form.description}
+            onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
+          />
+          <Input
+            label="Industry"
+            name="industry"
+            value={form.industry}
+            onChange={(e) => setForm((f) => ({ ...f, industry: e.target.value }))}
+          />
+          <Input
+            label="Target audience"
+            name="target_audience"
+            value={form.target_audience}
+            onChange={(e) => setForm((f) => ({ ...f, target_audience: e.target.value }))}
+          />
+          <Input
+            label="Website URL"
+            name="website_url"
+            type="url"
+            value={form.website_url}
+            onChange={(e) => setForm((f) => ({ ...f, website_url: e.target.value }))}
+          />
+          <Input
+            label="Brand keywords"
+            name="brand_keywords"
+            hint="Comma-separated phrases the writing assistant should prefer."
+            value={form.brand_keywords}
+            onChange={(e) => setForm((f) => ({ ...f, brand_keywords: e.target.value }))}
           />
           <div className="border-t border-ink/10 pt-5">
             <p className="eyebrow">First owner</p>

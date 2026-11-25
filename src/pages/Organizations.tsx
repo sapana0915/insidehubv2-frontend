@@ -5,10 +5,11 @@ import { useAuth } from "../context/AuthContext";
 import { errorMessage } from "../api/client";
 import {
   useAdminOrganizations,
+  useJoinOrganization,
   useMyOrganizations,
   useOrganizationMembers,
 } from "../hooks/organizations";
-import { ButtonLink } from "../components/ui/Button";
+import { Button, ButtonLink } from "../components/ui/Button";
 import { EmptyState, Spinner } from "../components/ui/Decor";
 import { formatDate } from "../lib/format";
 import type { OrganizationAdmin } from "../types";
@@ -17,6 +18,7 @@ export default function Organizations() {
   const { user, isLoading: authLoading } = useAuth();
   const location = useLocation();
   const mine = useMyOrganizations(Boolean(user));
+  const joinOrg = useJoinOrganization();
   const adminOrgs = useAdminOrganizations(Boolean(user?.is_admin));
 
   const initialSelected =
@@ -110,6 +112,7 @@ export default function Organizations() {
                         <p className="font-display text-lg font-semibold leading-tight">{org.name}</p>
                         <p className="mt-1 font-mono text-[0.65rem] uppercase tracking-[0.14em] text-ink-soft">
                           {org.slug} · {org.member_count} member{org.member_count === 1 ? "" : "s"}
+                          {org.email_domain ? ` · @${org.email_domain}` : ""}
                         </p>
                       </button>
                     </li>
@@ -129,6 +132,7 @@ export default function Organizations() {
                         <h3 className="mt-1 font-display text-2xl font-semibold">{selectedOrg.name}</h3>
                         <p className="mt-1 font-mono text-xs text-ink-soft">
                           {selectedOrg.slug} · since {formatDate(selectedOrg.created_at)}
+                          {selectedOrg.email_domain ? ` · @${selectedOrg.email_domain}` : ""}
                         </p>
                       </div>
                     </div>
@@ -237,16 +241,33 @@ export default function Organizations() {
                   <p className="font-mono text-sm uppercase tracking-wider">{myOrg.role ?? "—"}</p>
                 </div>
               </div>
+              {myOrg.email_domain ? (
+                <div>
+                  <span className="eyebrow">Email domain</span>
+                  <p className="font-mono text-sm">@{myOrg.email_domain}</p>
+                </div>
+              ) : null}
               <div>
                 <span className="eyebrow">Joined</span>
                 <p className="text-sm">{formatDate(myOrg.created_at)}</p>
               </div>
             </div>
           ) : (
-            <div className="mt-6">
+            <div className="mt-6 space-y-4">
               <EmptyState title="No organization yet.">
-                Ask your platform admin to create a workspace and make you the owner.
+                If your company workspace already exists, join with the same domain as your email.
               </EmptyState>
+              {joinOrg.isError ? (
+                <p className="text-sm text-terracotta-deep">{errorMessage(joinOrg.error)}</p>
+              ) : null}
+              <Button
+                type="button"
+                size="sm"
+                loading={joinOrg.isPending}
+                onClick={() => joinOrg.mutate()}
+              >
+                Join with my email domain
+              </Button>
             </div>
           )}
 
